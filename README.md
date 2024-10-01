@@ -8,3 +8,4 @@ Contributors:
 
 Alejandro Espinoza (aespin96@calpoly.edu)
 Adam Ta (ajta@calpoly.edu)
+Juan Zavala (jzaval17@calpoly.edu)
