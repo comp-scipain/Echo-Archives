@@ -1,4 +1,4 @@
-# group-project
+# Fitness Tracker
 
 Our API will be centered around health and fitness tracking.
 - Track exercises, sets, reps, weight, rest time.
@@ -6,6 +6,6 @@ Our API will be centered around health and fitness tracking.
 
 Contributors:
 
-Alejandro Espinoza (aespin96@calpoly.edu)
-Adam Ta (ajta@calpoly.edu)
-Eduardo Gallegos (egalle14@calpoly.edu)
+Alejandro Espinoza (aespin96@calpoly.edu)<br>
+Adam Ta (ajta@calpoly.edu)<br>
+Eduardo Gallegos (egalle14@calpoly.edu)<br>
