@@ -25,3 +25,57 @@ Request:
   }
 ]
 ```
+
+### Get set number - `/set_number/` (POST)
+Returns the weight of 
+
+Request:
+
+```python
+{
+  "set_number": int
+}
+```
+
+### Get rest time - `/rest_time/` (POST)
+Returns 
+
+Request:
+
+```python
+{
+  "rest_time":int 
+}
+```
+
+### `/`
+
+Request:
+
+```python
+
+```
+
+### `/`
+
+Request:
+
+```python
+
+```
+
+### `/`
+
+Request:
+
+```python
+
+```
+
+### `/`
+
+Request:
+
+```python
+
+```
