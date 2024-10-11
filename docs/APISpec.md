@@ -48,7 +48,7 @@ Request:
 }
 ```
 
-### Get Workouts`/workouts/{muscle_groups}`
+### Get Workouts`/workouts/{muscle_groups}` (GET)
 Returns muscle workouts that work out a specific muscle group.
 Request:
 ```python
