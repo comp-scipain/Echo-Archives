@@ -44,16 +44,27 @@ Request:
 
 ```python
 {
-  "rest_time":int 
+  "rest_time": int 
 }
 ```
 
-### `/`
+### Get Muscle Supported Workouts`/workouts/{muscle_groups}`
 
 Request:
-
 ```python
-
+[
+  {
+    "muscle_groups": str[],
+  }
+]
+```
+Response:
+```python
+[
+  {
+    "name": str[],
+  }
+]
 ```
 
 ### `/`
