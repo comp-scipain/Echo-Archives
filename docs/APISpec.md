@@ -48,8 +48,8 @@ Request:
 }
 ```
 
-### Get Muscle Supported Workouts`/workouts/{muscle_groups}`
-
+### Get Workouts`/workouts/{muscle_groups}`
+Returns muscle workouts that work out a specific muscle group.
 Request:
 ```python
 [
