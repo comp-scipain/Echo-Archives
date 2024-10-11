@@ -63,7 +63,7 @@ Response:
 ```python
 [
   {
-    "name": str[],
+    "workout_names": str[],
   }
 ]
 ```
