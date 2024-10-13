@@ -30,7 +30,6 @@ Request:
 Searches for workouts based on specified query parameters
 
 **Query Parameters**
-
 - `workout_name`: The name of the workout.
 - `muscle_groups`: The muscle groups that the workout targets
 
@@ -95,7 +94,6 @@ Response:
   }
 ]
 ```
-
 ```python
 class Distribution:
   "chest": int,
