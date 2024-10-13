@@ -26,29 +26,25 @@ Request:
 ]
 ```
 
-### Get set number - `/set_number/` (POST)
-Returns the weight of 
+### Search Workouts - `/workouts/search` (GET)
+Searches for workouts based on specified query parameters
 
-Request:
+**Query Parameters**
 
-```python
-{
-  "set_number": int
-}
-```
+- `workout_name`: The name of the workout.
+- `muscle_groups`: The muscle groups that the workout targets
 
-### Get rest time - `/rest_time/` (POST)
-Returns 
+**Response**:
+- `results`: A list of each line item has the following properties:
+  - `workout_name`: A string that represents the name of the workout
+  - `muscle_groups`: A list of strings that represents the muscle groups that the workout targets
 
-Request:
 
-```python
-{
-  "rest_time": int 
-}
-```
+### Reset App - `/admin/reset/` (POST)
+A call to Reset App will erase all saved workout data. Should only be called when the user no longer uses the app and wants to delete everything.
 
-### Get Workouts`/workouts/{muscle_groups}` (GET)
+
+### Get Workouts - `/workouts/{muscle_groups}` (GET)
 Returns muscle workouts that work out a specific muscle group.
 
 Request:
@@ -68,12 +64,19 @@ Response:
 ]
 ```
 
-### `/`
+### Current time - `/info/current_time` (POST)
+Share the current time
 
 Request:
 
 ```python
-
+[
+  {
+    "day": "string",
+    "hour": "number",
+    "minute": "number"
+  }
+]
 ```
 
 ### `/`
