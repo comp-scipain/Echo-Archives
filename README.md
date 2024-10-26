@@ -7,6 +7,5 @@ Our API will be centered around health and fitness tracking.
 Contributors:
 
 Alejandro Espinoza (aespin96@calpoly.edu)<br>
-Adam Ta (ajta@calpoly.edu)<br>
 Eduardo Gallegos (egalle14@calpoly.edu)<br>
 Zaid Camacho Zarate (zgcamach@calpoly.edu)<br>
