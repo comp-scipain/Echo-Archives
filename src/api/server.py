@@ -8,7 +8,7 @@ import sys
 from starlette.middleware.cors import CORSMiddleware
 
 description = """
-Central Coast Cauldrons is the premier ecommerce site for all your alchemical desires.
+tracks employee data
 """
 #on render
 app = FastAPI(
@@ -16,10 +16,10 @@ app = FastAPI(
     description=description,
     version="0.0.1",
     terms_of_service="http://example.com/terms/",
-    contact={
-        "name": "Lucas Pierce",
-        "email": "lupierce@calpoly.edu",
-    },
+    # contact={
+    #     "name": "Lucas Pierce",
+    #     "email": "lupierce@calpoly.edu",
+    # },
 )
 
 origins = ["https://potion-exchange.vercel.app"]
@@ -46,4 +46,4 @@ async def validation_exception_handler(request, exc):
 
 @app.get("/")
 async def root():
-    return {"message": "Welcome to the Central Coast Cauldrons."}
+    return {"message": "Welcome to the Echo Archives"}
