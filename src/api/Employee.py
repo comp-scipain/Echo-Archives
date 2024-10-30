@@ -1,15 +1,13 @@
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
-#Remember to uncomment this in order to work with render and supabase
-#from src.api import auth
+from src.api import auth
 import sqlalchemy
 from src import database as db
 
 router = APIRouter (
     prefix="/Employee",
     tags=["Employee"],
-    #Gonna need this later for supabase and render
-    #dependencies=[Depends(auth.get_api_key)],
+    dependencies=[Depends(auth.get_api_key)],
 )
     
 
@@ -29,3 +27,10 @@ def get_employee_stats(Employee: Employee):
     print(f"Skills: {Employee.skills}")
     print(f"Pay: {Employee.pay}")
     print(f"Department: {Employee.department}")
+
+@router.post("/read")
+def read_employee_stats():
+    print("Reading employee data from database")
+    with db.engine.begin() as connection:
+        Employee = connection.execute(sqlalchemy.text("SELECT * FROM employees")).all()
+        print(Employee)
