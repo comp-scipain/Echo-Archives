@@ -46,6 +46,10 @@ Searches for workouts based on specified query parameters
 ### Reset App - `/admin/reset/` (POST)
 A call to Reset App will erase all saved data. Should only be called when the user no longer uses the app and wants to delete everything.
 
+### Fire Employee - `/employee/delete` (POST)
+Fire an employee (remove from database) based on a specified ID
+
+
 ### Get User Workouts - `/workouts/{user_id}` (GET)
 Retrieves a list of workouts that are associated with user id.
 

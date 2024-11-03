@@ -56,6 +56,17 @@ def add_new_employee(Employee: Employee):
         print("Done")
 
 
+@router.post("/delete")
+def fire_employee(employee_id: int):
+    """
+    removes a specific employee from the database based on the employee_id passed in
+    """
+    with db.engine.begin() as connection:
+        to_be_fired = connection.execute(sqlalchemy.text("SELECT * FROM test_table WHERE id = :id"),{"id":employee_id}).all()
+        print(f"This employee will be fired: {to_be_fired}")
+        connection.execute(sqlalchemy.text("DELETE FROM employees WHERE id = :id"),{"id":employee_id})
+        print("Done!")
+
 @router.post("/search")
 def search_employees():
     """
