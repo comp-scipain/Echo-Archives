@@ -10,6 +10,7 @@ router = APIRouter(
     dependencies=[Depends(auth.get_api_key)],
 )
 
+# remember to add more to this later if there are more tables.
 @router.post("/reset")
 def reset():
     """
@@ -17,8 +18,6 @@ def reset():
     """
     print("Nuking everything")    
     with db.engine.begin() as connection:
-        connection.execute(sqlalchemy.text("DELETE FROM test_table"))
-        # Remember to uncomment this later
-        #connection.execute(sqlalchemy.text("DELETE FROM employees"))
+        connection.execute(sqlalchemy.text("DELETE FROM employees"))
 
     return "OK"
