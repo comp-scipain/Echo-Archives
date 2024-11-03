@@ -1,46 +1,50 @@
 # API Specification for Fitness Tracker App
 
-### Get Workouts - `/workouts/` (GET)
-Retrieves a list of workouts that are supported on the fitness app.
+### Get Employees - `/employee/get` (GET)
+Retrieves a list of current employees.
 
 Response:
 ```python
 [
   {
     "name": str,
-    "muscle_groups": str[],
+    "skills": str[],
+    "pay": float
+    "department": str
   }
 ]
 ```
 
-### Add Custom Workout - `/workouts/{workout_name}` (POST)
-Add a custom workout to the app. Note that the name of this workout must not conflict with any workouts already existing in the database.
+### Add Custom Workout - `/employee/add` (POST)
+Add a new employee to the roster
 
 Request:
 ```python
 [
   {
-    "name": str, # Must be unique
-    "muscle_groups": str[],
+    "name": str,
+    "skills": str[],
+    "pay": float
+    "department": str
   }
 ]
 ```
 
-### Search Workouts - `/workouts/search` (GET)
+### Search Employees - `/employee/search` (GET)
 Searches for workouts based on specified query parameters
 
 **Query Parameters**
-- `workout_name`: The name of the workout.
-- `muscle_groups`: The muscle groups that the workout targets
+- `employee_name`: The name of the employee.
+- `skills`: The muscle groups that the workout targets
 
 **Response**:
 - `results`: A list of each line item has the following properties:
-  - `workout_name`: A string that represents the name of the workout
-  - `muscle_groups`: A list of strings that represents the muscle groups that the workout targets
+  - `employee_name`: A string that represents the name of the employee
+  - `skills`: A list of strings that represents the skills that each employee has
 
 
 ### Reset App - `/admin/reset/` (POST)
-A call to Reset App will erase all saved workout data. Should only be called when the user no longer uses the app and wants to delete everything.
+A call to Reset App will erase all saved data. Should only be called when the user no longer uses the app and wants to delete everything.
 
 ### Get User Workouts - `/workouts/{user_id}` (GET)
 Retrieves a list of workouts that are associated with user id.

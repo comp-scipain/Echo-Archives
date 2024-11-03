@@ -20,7 +20,7 @@ class Employee(BaseModel):
     department: str
 
 
-@router.post("/get")
+@router.post("/employee")
 def get_employee_stats(Employee: Employee):
 
     print(f"Name: {Employee.name}")
@@ -29,8 +29,11 @@ def get_employee_stats(Employee: Employee):
     print(f"Department: {Employee.department}")
 
 
-@router.post("/read")
-def read_employee_stats():
+@router.post("/get")
+def get_all_employee_stats():
+    """
+    Get a list of all the current employees
+    """
     print("Reading employee data from database")
     with db.engine.begin() as connection:
         employee = connection.execute(sqlalchemy.text("SELECT name, skills, pay, department FROM employees")).all()
@@ -43,8 +46,19 @@ def read_employee_stats():
 
 @router.post("/add")
 def add_new_employee(Employee: Employee):
+    """
+    Add a new employee to the database
+    """
     print(f"adding employee named {Employee.name} with {Employee.skills} skills being paid ${Employee.pay} to work in {Employee.department}")
     with db.engine.begin() as connection:
         connection.execute(sqlalchemy.text("INSERT INTO employees (name, skills, pay, department) Values (:name, :skills, :pay, :department)"),
         {"name":Employee.name,"skills": Employee.skills, "pay":Employee.pay,"department":Employee.department})
         print("Done")
+
+
+@router.post("/search")
+def search_employees():
+    """
+    search for specific employees
+    """
+    print("Not currently implemented :(")
