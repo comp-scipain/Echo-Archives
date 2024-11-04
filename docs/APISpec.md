@@ -8,6 +8,14 @@ Search Employees (GET)
 
 Fire Employee (POST)
 
+///Promote Employee
+
+///Demote Employee
+
+///Create New Department
+
+///Move Employee To Other Department
+
 
 ### Get Employees - `/employee/get` (GET)
 Retrieves a list of current employees.
@@ -20,7 +28,10 @@ Response:
     "skills": str[],
     "pay": float
     "department": str
-  }
+  },
+{
+...
+}
 ]
 ```
 
