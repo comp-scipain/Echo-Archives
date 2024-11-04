@@ -3,6 +3,7 @@
 Our API will be centered around health and fitness tracking.
 - Track employees, their skills, pay, what department they work for, etc.
 - Get valuable insights on your employees.
+- Promote, demote, fire and transfer employees to other departments
 
 Contributors:
 
