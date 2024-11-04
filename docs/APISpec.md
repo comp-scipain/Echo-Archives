@@ -15,7 +15,7 @@ Response:
 ]
 ```
 
-### Add Custom Workout - `/employee/add` (POST)
+### Add New Employee - `/employee/add` (POST)
 Add a new employee to the roster
 
 Request:
@@ -31,7 +31,7 @@ Request:
 ```
 
 ### Search Employees - `/employee/search` (GET)
-Searches for workouts based on specified query parameters
+Searches for employees based on specified query parameters
 
 **Query Parameters**
 - `employee_name`: The name of the employee.
