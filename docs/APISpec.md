@@ -1,6 +1,6 @@
 # API Specification for Echo Archive
 
-Get Employees (GET)
+Get Employees (GET)  #Could implement an option to choose specific department or whole company
 
 Add New Employee (POST)
 
@@ -8,13 +8,17 @@ Search Employees (GET)
 
 Fire Employee (POST)
 
-///Promote Employee
+///Promote Employee (POST)
 
-///Demote Employee
+///Demote Employee (POST)
 
-///Create New Department
+///Create New Department (POST)
 
-///Move Employee To Other Department
+///Move Employee To Other Department (POST)
+
+///Get Department Employees (GET) #Could merge with Get Employees
+
+///Get Department Payroll (GET)
 
 
 ### Get Employees - `/employee/get` (GET)
