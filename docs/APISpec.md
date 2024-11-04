@@ -1,4 +1,10 @@
-# API Specification for Fitness Tracker App
+# API Specification for Echo Archive
+
+Get Employees (GET)
+Add New Employee (POST)
+Search Employees (GET)
+Fire Employee (POST)
+
 
 ### Get Employees - `/employee/get` (GET)
 Retrieves a list of current employees.
