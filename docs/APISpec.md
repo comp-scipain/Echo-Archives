@@ -1,8 +1,11 @@
 # API Specification for Echo Archive
 
 Get Employees (GET)
+
 Add New Employee (POST)
+
 Search Employees (GET)
+
 Fire Employee (POST)
 
 
