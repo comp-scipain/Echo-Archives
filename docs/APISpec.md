@@ -2,27 +2,82 @@
 
 Get Employees (GET)  #Could implement an option to choose specific department or whole company
 
-Add New Employee (POST)
-
 Search Employees (GET)
 
-Fire Employee (POST)
 
-/Promote Employee (POST)
+### Promote Employee - `/employee/promote` (POST)
+Promotes an employee by increasing their level by 1 and increasing their pay by approximately 7%.
 
-/Demote Employee (POST)
+Request:
+```python
+{
+  "employee_id": int
+}
+```
 
-/Create New Department (POST)
+Response:
+```python
+{
+  "success": bool,
+}
+```
 
-///Move Employee To Other Department (POST)
+### Demote Employee - `/employee/demote` (POST)
+Demotes an employee by decreasing their level by 1 and decreasing their pay by approximately 7%
+
+Request:
+```python
+{
+  "employee_id": int
+}
+```
+
+Response:
+```python
+{
+  "success": bool,
+}
+```
+
+### Create New Department (POST)
+Adds a new department to the database 
+
+Request:
+```python
+[
+  {
+    "name": str,
+    "basepay": int,
+    "population": int
+  }
+]
+```
+
+### Transfer Employee (POST)
+Transfers an employee to a new department, resetting their pay, level, and updating department population.
+
+Request:
+```python
+{
+  "employee_is": int,
+  "new_department": str,
+}
+```
+
+Response:
+```python
+{
+  "success": bool,
+}
+```
 
 ///Get Department Employees (GET) #Could merge with Get Employees
 
-///Get Department Payroll (GET)
+/Get Department Payroll (GET)
 
 
 ### Get Employees - `/employee/get` (GET)
-Retrieves a list of current employees.
+Retrieves a list of all current employees.
 
 Response:
 ```python
@@ -30,7 +85,7 @@ Response:
   {
     "name": str,
     "skills": str[],
-    "pay": float
+    "pay": float,
     "department": str
   },
 {
@@ -48,8 +103,9 @@ Request:
   {
     "name": str,
     "skills": str[],
-    "pay": float
-    "department": str
+    "pay": float,
+    "department": str,
+    "level": int
   }
 ]
 ```
@@ -74,6 +130,7 @@ A call to Reset App will erase all saved data. Should only be called when the us
 Fire an employee (remove from database) based on a specified ID
 
 
+### OLD STUFF FROM PREVIOUS PROJECT
 ### Get User Workouts - `/workouts/{user_id}` (GET)
 Retrieves a list of workouts that are associated with user id.
 
