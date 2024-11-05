@@ -24,7 +24,7 @@ def add_new_department(dept: Department):
     print(f"Adding department named {dept.name} with ${dept.basePay} base pay and population {dept.population}.")
     with db.engine.begin() as connection:
         connection.execute(
-            sqlalchemy.text("INSERT INTO departments (dept_name, base_pay, dept_populus) VALUES (:name, :pay, :popul)"),
+            sqlalchemy.text("INSERT INTO dept (dept_name, base_pay, dept_populus) VALUES (:name, :pay, :popul)"),
             {"name": dept.name, "pay": dept.basePay, "popul": 0}
         )
         print("Done")
