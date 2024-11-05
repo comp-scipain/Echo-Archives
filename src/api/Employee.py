@@ -1,32 +1,44 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from src.api import auth
 import sqlalchemy
 from src import database as db
 
-router = APIRouter (
-    prefix="/Employee",
+router = APIRouter(
+    prefix="/employee",
     tags=["Employee"],
     dependencies=[Depends(auth.get_api_key)],
 )
-    
+
 
 class Employee(BaseModel):
     name: str
-
     skills: list[str]
     pay: float
-
     department: str
+    level: int
 
 
-@router.post("/employee")
-def get_employee_stats(Employee: Employee):
+@router.post("/stats", response_model=Employee)
+def get_employee_stats(emp_id: int):
+    with db.engine.begin() as connection:
+        result = connection.execute(
+            sqlalchemy.text("SELECT name, skills, pay, department, level FROM employees WHERE id = :id"),
+            {"id": emp_id}
+        ).fetchone()
+        
+        if result is None:
+            raise HTTPException(status_code=404, detail="Employee not found")
 
-    print(f"Name: {Employee.name}")
-    print(f"Skills: {Employee.skills}")
-    print(f"Pay: {Employee.pay}")
-    print(f"Department: {Employee.department}")
+        name, skills, pay, department, level = result
+
+        return Employee(
+            name=name,
+            skills=skills,
+            pay=pay,
+            department=department,
+            level=level
+        )
 
 
 @router.post("/get")
@@ -36,40 +48,57 @@ def get_all_employee_stats():
     """
     print("Reading employee data from database")
     with db.engine.begin() as connection:
-        employee = connection.execute(sqlalchemy.text("SELECT name, skills, pay, department FROM employees")).all()
-        for person in employee:
-            print(f"Employee name: {person.name}")
-            print(f"Employee skills: {person.skills}")
-            print(f"Employee pay: {person.pay}")
-            print(f"Employee Department: {person.department}")
-            
+        employees = connection.execute(
+            sqlalchemy.text("SELECT name, skills, pay, department, level FROM employees")
+        ).fetchall()
+
+        if not employees:
+            raise HTTPException(status_code=404, detail="No employees found")
+
+        return [Employee(name=e.name, skills=e.skills, pay=e.pay, department=e.department, level=e.level) for e in employees]
+
 
 @router.post("/add")
-def add_new_employee(Employee: Employee):
+def add_new_employee(employee: Employee):
     """
-    Add a new employee to the database
+    Add a new employee to the Database
     """
-    print(f"adding employee named {Employee.name} with {Employee.skills} skills being paid ${Employee.pay} to work in {Employee.department}")
+    print(f"Adding employee named {employee.name} with {employee.skills} skills being paid ${employee.pay} to work in the {employee.department} department")
     with db.engine.begin() as connection:
-        connection.execute(sqlalchemy.text("INSERT INTO employees (name, skills, pay, department) Values (:name, :skills, :pay, :department)"),
-        {"name":Employee.name,"skills": Employee.skills, "pay":Employee.pay,"department":Employee.department})
+        connection.execute(
+            sqlalchemy.text("INSERT INTO employees (name, skills, pay, department, level) VALUES (:name, :skills, :pay, :department, :level)"),
+            {"name": employee.name, "skills": employee.skills, "pay": employee.pay, "department": employee.department, "level": employee.level}
+        )
         print("Done")
+    return {"status": "OK"}
 
 
 @router.post("/delete")
 def fire_employee(employee_id: int):
     """
-    removes a specific employee from the database based on the employee_id passed in
+    Removes a specific employee from the database based on the employee_id passed in
     """
     with db.engine.begin() as connection:
-        to_be_fired = connection.execute(sqlalchemy.text("SELECT * FROM test_table WHERE id = :id"),{"id":employee_id}).all()
+        to_be_fired = connection.execute(
+            sqlalchemy.text("SELECT * FROM employees WHERE id = :id"), {"id": employee_id}
+        ).fetchone()
+
+        if not to_be_fired:
+            raise HTTPException(status_code=404, detail="Employee not found")
+
         print(f"This employee will be fired: {to_be_fired}")
-        connection.execute(sqlalchemy.text("DELETE FROM employees WHERE id = :id"),{"id":employee_id})
+        connection.execute(
+            sqlalchemy.text("DELETE FROM employees WHERE id = :id"), {"id": employee_id}
+        )
         print("Done!")
+    return {"status": "OK"}
+
 
 @router.post("/search")
 def search_employees():
     """
-    search for specific employees
+    Search for specific employees
     """
     print("Not currently implemented :(")
+    raise HTTPException(status_code=501, detail="Not currently implemented")
+
