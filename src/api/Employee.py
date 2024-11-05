@@ -105,10 +105,10 @@ def fire_employee(employee_id: int):
     """
     with db.engine.begin() as connection:
         to_be_fired = connection.execute(
-            sqlalchemy.text("SELECT * FROM employees WHERE id = :id"), {"id": employee_id}).fetchone()
+            sqlalchemy.text("SELECT id, name, skills, pay, department, level FROM employees WHERE id = :id"), {"id": employee_id}).fetchone()
         if not to_be_fired:
             raise HTTPException(status_code=404, detail="Employee not found")
-        department = to_be_fired['department']
+        department = to_be_fired[4]
         print(f"This employee will be fired: {to_be_fired}")
         connection.execute(
             sqlalchemy.text("DELETE FROM employees WHERE id = :id"), {"id": employee_id})
