@@ -14,7 +14,7 @@ Fire Employee (POST)
 
 /Create New Department (POST)
 
-///Move Employee To Other Department (POST)
+/Transfer Employee (POST)
 
 ///Get Department Employees (GET) #Could merge with Get Employees
 
