@@ -18,7 +18,7 @@ Fire Employee (POST)
 
 ///Get Department Employees (GET) #Could merge with Get Employees
 
-///Get Department Payroll (GET)
+/Get Department Payroll (GET)
 
 
 ### Get Employees - `/employee/get` (GET)
