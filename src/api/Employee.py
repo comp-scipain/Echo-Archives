@@ -174,6 +174,58 @@ def demote_employee(employee_id: int):
         return {"status": "OK", "new_level": new_level, "new_pay": new_pay}
 
 
+@router.post("/transfer")
+def transfer_employee(employee_id: int, new_department: str):
+    """
+    Transfers an employee to a new department, resetting their pay, level, and updating dept_populus.
+    """
+    with db.engine.begin() as connection:
+        # Fetch the current employee details
+        employee = connection.execute(
+            sqlalchemy.text("SELECT id, name, skills, pay, department, level FROM employees WHERE id = :id"), 
+            {"id": employee_id}
+        ).fetchone()
+
+        if not employee:
+            raise HTTPException(status_code=404, detail="Employee not found")
+
+        current_department = employee[4]
+
+        if current_department == new_department:
+            raise HTTPException(status_code=400, detail="Employee is already in the specified department")
+
+        # Fetch the base pay for the new department
+        base_pay_result = connection.execute(
+            sqlalchemy.text("SELECT base_pay FROM dept WHERE dept_name = :dept_name"), 
+            {"dept_name": new_department}
+        ).fetchone()
+
+        if not base_pay_result:
+            raise HTTPException(status_code=404, detail="New department not found")
+
+        new_base_pay = base_pay_result[0]
+
+        # Update the employee's department, pay, and level
+        connection.execute(
+            sqlalchemy.text("UPDATE employees SET department = :new_department, pay = :new_pay, level = :new_level WHERE id = :id"),
+            {"new_department": new_department, "new_pay": new_base_pay, "new_level": 0, "id": employee_id}
+        )
+
+        # Update department populations
+        connection.execute(
+            sqlalchemy.text("UPDATE dept SET dept_populus = dept_populus - 1 WHERE dept_name = :dept_name"),
+            {"dept_name": current_department}
+        )
+
+        connection.execute(
+            sqlalchemy.text("UPDATE dept SET dept_populus = dept_populus + 1 WHERE dept_name = :dept_name"),
+            {"dept_name": new_department}
+        )
+
+        print(f"Transferred employee: {employee[1]} to new department {new_department} with new pay: ${new_base_pay} and level reset to 0")
+        return {"status": "OK", "new_department": new_department, "new_pay": new_base_pay, "new_level": 0}
+
+
 
 @router.post("/search")
 def search_employees():
