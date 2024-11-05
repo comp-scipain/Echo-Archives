@@ -118,6 +118,63 @@ def fire_employee(employee_id: int):
     return {"status": "OK"}
 
 
+@router.post("/promote")
+def promote_employee(employee_id: int):
+    """
+    Promotes an employee by increasing their level by 1 and increasing their pay by approximately 7%
+    """
+    with db.engine.begin() as connection:
+        # Fetch the employee to be promoted
+        employee = connection.execute(
+            sqlalchemy.text("SELECT id, name, skills, pay, department, level FROM employees WHERE id = :id"), 
+            {"id": employee_id}
+        ).fetchone()
+
+        if not employee:
+            raise HTTPException(status_code=404, detail="Employee not found")
+
+        new_level = employee[5] + 1  # Increment the level
+        new_pay = round(employee[3] * 1.07, 2)  # Increase pay by 7% and round to 2 decimal places
+
+        # Update the employee's level and pay
+        connection.execute(
+            sqlalchemy.text("UPDATE employees SET level = :level, pay = :pay WHERE id = :id"),
+            {"level": new_level, "pay": new_pay, "id": employee_id}
+        )
+
+        print(f"Promoted employee: {employee[1]} to level {new_level} with new pay: ${new_pay}")
+        return {"status": "OK", "new_level": new_level, "new_pay": new_pay}
+
+
+@router.post("/demote")
+def demote_employee(employee_id: int):
+    """
+    Demotes an employee by decreasing their level by 1 and decreasing their pay by approximately 7%
+    """
+    with db.engine.begin() as connection:
+        # Fetch the employee to be demoted
+        employee = connection.execute(
+            sqlalchemy.text("SELECT id, name, skills, pay, department, level FROM employees WHERE id = :id"), 
+            {"id": employee_id}
+        ).fetchone()
+
+        if not employee:
+            raise HTTPException(status_code=404, detail="Employee not found")
+
+        new_level = employee[5] - 1  # Decrement the level
+        new_pay = round(employee[3] * 0.93, 2)  # Decrease pay by 7% and round to 2 decimal places
+
+        # Update the employee's level and pay
+        connection.execute(
+            sqlalchemy.text("UPDATE employees SET level = :level, pay = :pay WHERE id = :id"),
+            {"level": new_level, "pay": new_pay, "id": employee_id}
+        )
+
+        print(f"Demoted employee: {employee[1]} to level {new_level} with new pay: ${new_pay}")
+        return {"status": "OK", "new_level": new_level, "new_pay": new_pay}
+
+
+
 @router.post("/search")
 def search_employees():
     """

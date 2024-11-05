@@ -16,7 +16,7 @@ class Department(BaseModel):
     population: int
 
 
-@router.post("/add_departments/")
+@router.post("/new/")
 def add_new_department(dept: Department):
     """
     Add a new department to the Database
