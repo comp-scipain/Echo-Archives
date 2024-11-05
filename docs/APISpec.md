@@ -30,7 +30,7 @@ Response:
   {
     "name": str,
     "skills": str[],
-    "pay": float
+    "pay": float,
     "department": str
   },
 {
@@ -48,7 +48,7 @@ Request:
   {
     "name": str,
     "skills": str[],
-    "pay": float
+    "pay": float,
     "department": str
   }
 ]
