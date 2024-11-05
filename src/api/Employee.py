@@ -11,6 +11,12 @@ router = APIRouter(
 )
 
 
+class NewEmployee(BaseModel):
+    name: str
+    skills: list[str]
+    department: str
+
+
 class Employee(BaseModel):
     name: str
     skills: list[str]
@@ -52,24 +58,41 @@ def get_all_employee_stats():
 
 
 @router.post("/add")
-def add_new_employee(employee: Employee):
+def add_new_employee(employee: NewEmployee):
     """
     Add a new employee to the Database
     """
-    print(f"Adding employee named {employee.name} with {employee.skills} skills being paid ${employee.pay} to work in the {employee.department} department")
     with db.engine.begin() as connection:
         try:
+            # Fetch base_pay from the department
+            result = connection.execute(
+                sqlalchemy.text("SELECT base_pay FROM dept WHERE dept_name = :dept_name"), 
+                {"dept_name": employee.department}
+            ).fetchone()
+            
+            if result is None:
+                raise HTTPException(status_code=404, detail="Department not found")
+
+            # Extract base_pay value
+            pay = result[0]  # result is a tuple, we take the first element which is base_pay
+
+            print(f"Adding employee named {employee.name} with {employee.skills} skills being paid ${pay} to work in the {employee.department} department")
+
+            # Insert new employee
             connection.execute(
                 sqlalchemy.text("INSERT INTO employees (name, skills, pay, department, level) VALUES (:name, :skills, :pay, :department, :level)"),
-                {"name": employee.name, "skills": employee.skills, "pay": employee.pay, "department": employee.department, "level": employee.level}
+                {"name": employee.name, "skills": employee.skills, "pay": pay, "department": employee.department, "level": 0}
             )
-            
+
+            # Update department population
             connection.execute(
                 sqlalchemy.text("UPDATE dept SET dept_populus = dept_populus + 1 WHERE dept_name = :dept_name"),
                 {"dept_name": employee.department}
             )
+
             print("Done")
             return {"status": "OK"}
+        
         except Exception as e:
             print(f"An error occurred: {e}")
             raise HTTPException(status_code=500, detail="An error occurred while adding the employee")
