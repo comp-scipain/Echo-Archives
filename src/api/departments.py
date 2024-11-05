@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from src.api import auth
 import sqlalchemy
@@ -30,3 +30,23 @@ def add_new_department(dept: Department):
         print("Done")
     return {"status": "OK"}
 
+
+
+@router.get("/department/total_pay")
+def get_total_department_pay(department_name: str):
+    """
+    Returns the total pay for all employees in the specified department
+    """
+    with db.engine.begin() as connection:
+        result = connection.execute(
+            sqlalchemy.text("SELECT SUM(pay) FROM employees WHERE department = :department_name"),
+            {"department_name": department_name}
+        ).fetchone()
+
+        if not result or result[0] is None:
+            raise HTTPException(status_code=404, detail="Department not found or no employees in the department")
+
+        total_pay = result[0]
+        
+        print(f"Total pay for department {department_name} is: ${total_pay:.2f}")
+        return {"department": department_name, "total_pay": total_pay}
