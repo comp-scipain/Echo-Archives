@@ -8,11 +8,11 @@ Search Employees (GET)
 
 Fire Employee (POST)
 
-///Promote Employee (POST)
+/Promote Employee (POST)
 
-///Demote Employee (POST)
+/Demote Employee (POST)
 
-///Create New Department (POST)
+/Create New Department (POST)
 
 ///Move Employee To Other Department (POST)
 
