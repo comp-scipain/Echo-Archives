@@ -235,3 +235,30 @@ def search_employees():
     print("Not currently implemented :(")
     raise HTTPException(status_code=501, detail="Not currently implemented")
 
+@router.get("/department/history")
+def get_department_history(department_name: str):
+    """
+    Fetches the employment history of all employees who were in the specified department.
+    """
+    with db.engine.begin() as connection:
+        # Fetch the employment history for the specified department
+        history_records = connection.execute(
+            sqlalchemy.text("SELECT emp_id, emp_name, days_employed, day_wage FROM history WHERE in_dept = :department_name"),
+            {"department_name": department_name}
+        ).fetchall()
+
+        if not history_records:
+            raise HTTPException(status_code=404, detail="No history records found for the specified department")
+
+        department_history = [
+            {
+                # "emp_id": record[0],
+                "emp_name": record[1],
+                "days_employed": record[2],
+                "day_wage": record[3]
+            }
+            for record in history_records
+        ]
+
+        print(f"Fetched history for department: {department_name}")
+        return {"status": "OK", "department_history": department_history}
