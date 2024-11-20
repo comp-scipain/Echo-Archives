@@ -251,7 +251,7 @@ def log_employee_history(emp_id: int, days_employed: int, day_wage: float, in_de
                 raise HTTPException(status_code=404, detail="Employee not found")
 
             connection.execute(
-                sqlalchemy.text("""LOCK TABLE history IN EXCLUSIVE MODE;
+                sqlalchemy.text("""
                     INSERT INTO history (emp_id, emp_name, days_employed, day_wage, in_dept) VALUES (:emp_id, :emp_name, :days_employed, :day_wage, :in_dept)"""),
                 {
                     "emp_id": employee[0],
