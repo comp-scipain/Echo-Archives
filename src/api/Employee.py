@@ -236,40 +236,6 @@ def search_employees():
     raise HTTPException(status_code=501, detail="Not currently implemented")
 
 
-@router.get("/department/history")
-def get_department_history(department_name: str):
-    """
-    Fetches the employment history of all employees who were in the specified department,
-    aggregating the days employed for each employee.
-    """
-    with db.engine.begin() as connection:
-        history_records = connection.execute(
-            sqlalchemy.text("SELECT emp_id, emp_name, days_employed, day_wage FROM history WHERE in_dept = :department_name"),
-            {"department_name": department_name}
-        ).fetchall()
-
-        if not history_records:
-            raise HTTPException(status_code=404, detail="No history records found for the specified department")
-
-        employee_history = {}
-        for record in history_records:
-            emp_id = record[0]
-            if emp_id in employee_history:
-                employee_history[emp_id]["days_employed"] += record[2]
-            else:
-                employee_history[emp_id] = {
-                    "emp_id": emp_id,
-                    "emp_name": record[1],
-                    "days_employed": record[2],
-                    "day_wage": record[3]
-                }
-
-        department_history = list(employee_history.values())
-
-        print(f"Fetched history for department: {department_name}")
-        return {"status": "OK", "department_history": department_history}
-
-
 @router.post("/log_history")
 def log_employee_history(emp_id: int, days_employed: int, day_wage: float, in_dept: str):
     """
@@ -302,3 +268,46 @@ def log_employee_history(emp_id: int, days_employed: int, day_wage: float, in_de
     except Exception as e:
         print(f"An error occurred: {e}")
         raise HTTPException(status_code=500, detail="An error occurred while logging the employee's history")
+
+
+@router.get("/employee/total_paid")
+def get_total_paid_by_employee(emp_id: int):
+    """
+    Calculates the total paid value for a specific employee by multiplying their wage by the days employed,
+    and aggregates this total by department.
+    """
+    with db.engine.begin() as connection:
+        history_records = connection.execute(
+            sqlalchemy.text("SELECT days_employed, day_wage, in_dept FROM history WHERE emp_id = :emp_id"),
+            {"emp_id": emp_id}
+        ).fetchall()
+        if not history_records:
+            raise HTTPException(status_code=404, detail="No history records found for the specified employee")
+
+        department_totals = {}
+        total_paid = 0.0
+        for record in history_records:
+            department = record[2]
+            total_paid_for_row = record[0] * record[1]  # days_employed * day_wage
+            total_paid += total_paid_for_row
+
+            if department in department_totals:
+                department_totals[department] += total_paid_for_row
+            else:
+                department_totals[department] = total_paid_for_row
+
+        formatted_department_totals = [
+            {"department": dept, "total_paid": round(total, 2)}
+            for dept, total in department_totals.items()
+        ]
+        employee = connection.execute(
+                sqlalchemy.text("SELECT name FROM employees WHERE id = :id"), 
+                {"id": emp_id}).fetchone()
+        response = {
+            "Employee Name": employee,
+            "total_paid": round(total_paid, 2),
+            "total_paid_by_department": formatted_department_totals
+        }
+
+        print(f"Total paid for employee {emp_id}: {response}")
+        return {"status": "OK", "data": response}
