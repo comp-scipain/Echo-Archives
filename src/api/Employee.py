@@ -238,10 +238,10 @@ def search_employees():
 @router.get("/department/history")
 def get_department_history(department_name: str):
     """
-    Fetches the employment history of all employees who were in the specified department.
+    Fetches the employment history of all employees who were in the specified department,
+    aggregating the days employed for each employee.
     """
     with db.engine.begin() as connection:
-        # Fetch the employment history for the specified department
         history_records = connection.execute(
             sqlalchemy.text("SELECT emp_id, emp_name, days_employed, day_wage FROM history WHERE in_dept = :department_name"),
             {"department_name": department_name}
@@ -250,15 +250,47 @@ def get_department_history(department_name: str):
         if not history_records:
             raise HTTPException(status_code=404, detail="No history records found for the specified department")
 
-        department_history = [
-            {
-                # "emp_id": record[0],
-                "emp_name": record[1],
-                "days_employed": record[2],
-                "day_wage": record[3]
-            }
-            for record in history_records
-        ]
+        employee_history = {}
+        for record in history_records:
+            emp_id = record[0]
+            if emp_id in employee_history:
+                employee_history[emp_id]["days_employed"] += record[2]
+            else:
+                employee_history[emp_id] = {
+                    "emp_id": emp_id,
+                    "emp_name": record[1],
+                    "days_employed": record[2],
+                    "day_wage": record[3]
+                }
+
+        department_history = list(employee_history.values())
 
         print(f"Fetched history for department: {department_name}")
         return {"status": "OK", "department_history": department_history}
+
+
+@router.post("/log_history")
+def log_employee_history(emp_id: int, days_employed: int, day_wage: float):
+    """
+    Logs an employee's history into the history table.
+    """
+    with db.engine.begin() as connection:
+        employee = connection.execute(
+            sqlalchemy.text("SELECT id, name, department FROM employees WHERE id = :id"), 
+            {"id": emp_id}).fetchone()
+
+        if not employee:
+            raise HTTPException(status_code=404, detail="Employee not found")
+        connection.execute(
+            sqlalchemy.text("""LOCK TABLE history IN EXCLUSIVE MODE;
+                INSERT INTO history (emp_id, emp_name, days_employed, day_wage, in_dept) VALUES (:emp_id, :emp_name, :days_employed, :day_wage, :in_dept)"""),
+            {
+                "emp_id": employee[0],
+                "emp_name": employee[1],
+                "days_employed": days_employed,
+                "day_wage": day_wage,
+                "in_dept": employee[2]
+            }
+        )
+        print(f"Logged history for employee: {employee[1]}")
+        return {"status": "OK"}
