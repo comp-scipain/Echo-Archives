@@ -32,7 +32,7 @@ def add_new_department(dept: Department):
 
 
 
-@router.get("/department/total_pay")
+@router.get("/department/daily_pay")
 def get_total_department_pay(department_name: str):
     """
     Returns the total pay for all employees in the specified department
