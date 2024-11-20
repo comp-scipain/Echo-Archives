@@ -24,6 +24,30 @@ class Employee(BaseModel):
     department: str
     level: int
 
+@router.post("/{employee_id}/timeoff")
+def time_off(emp_id: int):
+    """
+    Give a given employee time off
+    """
+
+
+    return {
+    "employee_id": emp_id,
+    "time_off": [{
+    "type": "paid_leave", #which specifies what is the type of time off
+    "start_date": "2024-12-01",
+    "end_date": "2024-12-05",
+    "days_taken": 5
+    }]
+    }
+
+@router.post("/{employee_id}/review")
+def review_employee(emp_id: int):
+    """
+    Give a comprehensive review of a given employee
+    """
+    
+    return "This employee is the employee of all time."
 
 @router.post("/stats", response_model=Employee)
 def get_employee_stats(emp_id: int):
@@ -98,7 +122,7 @@ def add_new_employee(employee: NewEmployee):
             raise HTTPException(status_code=500, detail="An error occurred while adding the employee")
 
 
-@router.post("/delete")
+@router.delete("/delete")
 def fire_employee(employee_id: int):
     """
     Removes a specific employee from the database based on the employee_id passed in
