@@ -25,14 +25,16 @@ class Employee(BaseModel):
     level: int
 
 @router.post("/{employee_id}/timeoff")
-def time_off(emp_id: int):
+def time_off(employee_id: int):
     """
     Give a given employee time off
     """
+    with db.engine.begin() as connection:
+        current_employee = connection.execute(sqlalchemy.text("SELECT FROM employees WHERE id = :emp_id"),[{"emd_id":employee_id}]).fetchone
 
 
     return {
-    "employee_id": emp_id,
+    "employee_id": employee_id,
     "time_off": [{
     "type": "paid_leave", #which specifies what is the type of time off
     "start_date": "2024-12-01",
@@ -42,19 +44,21 @@ def time_off(emp_id: int):
     }
 
 @router.post("/{employee_id}/review")
-def review_employee(emp_id: int):
+def review_employee(employee_id: int):
     """
     Give a comprehensive review of a given employee
     """
-    
+    with db.engine.begin() as connection:
+        result = connection.execute(sqlalchemy.text(""))
+
     return "This employee is the employee of all time."
 
 @router.post("/stats", response_model=Employee)
-def get_employee_stats(emp_id: int):
+def get_employee_stats(employee_id: int):
     with db.engine.begin() as connection:
         result = connection.execute(
             sqlalchemy.text("SELECT name, skills, pay, department, level FROM employees WHERE id = :id"),
-            {"id": emp_id}).fetchone()
+            {"id": employee_id}).fetchone()
         if result is None:
             raise HTTPException(status_code=404, detail="Employee not found")
         name, skills, pay, department, level = result
