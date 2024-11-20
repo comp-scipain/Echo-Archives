@@ -50,3 +50,40 @@ def get_total_department_pay(department_name: str):
         
         print(f"Total pay for department {department_name} is: ${total_pay:.2f}")
         return {"department": department_name, "total_pay": total_pay}
+
+@router.post("/departments/total_paid")
+def get_total_paid_by_department():
+    """
+    Calculates the total paid value for each employee by multiplying their wage by the days employed,
+    and aggregates this total by department.
+    """
+    try:
+        with db.engine.begin() as connection:
+            history_records = connection.execute(
+                sqlalchemy.text("SELECT days_employed, day_wage, in_dept FROM history")
+            ).fetchall()
+
+            if not history_records:
+                raise HTTPException(status_code=404, detail="No history records found")
+
+            department_totals = {}
+            for record in history_records:
+                department = record[2]
+                total_paid = record[0] * record[1]  # days_employed * day_wage
+
+                if department in department_totals:
+                    department_totals[department] += total_paid
+                else:
+                    department_totals[department] = total_paid
+
+            formatted_totals = [
+                {"department": dept, "total_paid": round(total, 2)}
+                for dept, total in department_totals.items()
+            ]
+
+            print(f"Total paid by department: {formatted_totals}")
+            return {"status": "OK", "total_paid_by_department": formatted_totals}
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        raise HTTPException(status_code=500, detail="An error occurred while calculating the total paid by department")

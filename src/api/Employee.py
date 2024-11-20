@@ -235,6 +235,7 @@ def search_employees():
     print("Not currently implemented :(")
     raise HTTPException(status_code=501, detail="Not currently implemented")
 
+
 @router.get("/department/history")
 def get_department_history(department_name: str):
     """
@@ -270,27 +271,34 @@ def get_department_history(department_name: str):
 
 
 @router.post("/log_history")
-def log_employee_history(emp_id: int, days_employed: int, day_wage: float):
+def log_employee_history(emp_id: int, days_employed: int, day_wage: float, in_dept: str):
     """
     Logs an employee's history into the history table.
     """
-    with db.engine.begin() as connection:
-        employee = connection.execute(
-            sqlalchemy.text("SELECT id, name, department FROM employees WHERE id = :id"), 
-            {"id": emp_id}).fetchone()
+    try:
+        with db.engine.begin() as connection:
+            employee = connection.execute(
+                sqlalchemy.text("SELECT id, name FROM employees WHERE id = :id"), 
+                {"id": emp_id}).fetchone()
 
-        if not employee:
-            raise HTTPException(status_code=404, detail="Employee not found")
-        connection.execute(
-            sqlalchemy.text("""LOCK TABLE history IN EXCLUSIVE MODE;
-                INSERT INTO history (emp_id, emp_name, days_employed, day_wage, in_dept) VALUES (:emp_id, :emp_name, :days_employed, :day_wage, :in_dept)"""),
-            {
-                "emp_id": employee[0],
-                "emp_name": employee[1],
-                "days_employed": days_employed,
-                "day_wage": day_wage,
-                "in_dept": employee[2]
-            }
-        )
-        print(f"Logged history for employee: {employee[1]}")
-        return {"status": "OK"}
+            if not employee:
+                raise HTTPException(status_code=404, detail="Employee not found")
+
+            connection.execute(
+                sqlalchemy.text("""LOCK TABLE history IN EXCLUSIVE MODE;
+                    INSERT INTO history (emp_id, emp_name, days_employed, day_wage, in_dept) VALUES (:emp_id, :emp_name, :days_employed, :day_wage, :in_dept)"""),
+                {
+                    "emp_id": employee[0],
+                    "emp_name": employee[1],
+                    "days_employed": days_employed,
+                    "day_wage": day_wage,
+                    "in_dept": in_dept
+                }
+            )
+
+            print(f"Logged history for employee: {employee[1]}")
+            return {"status": "OK"}
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        raise HTTPException(status_code=500, detail="An error occurred while logging the employee's history")
