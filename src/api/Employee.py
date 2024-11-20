@@ -235,7 +235,7 @@ def search_employees():
     print("Not currently implemented :(")
     raise HTTPException(status_code=501, detail="Not currently implemented")
 
-
+#Note: in order to get the days employed we could use DATEDIFF(NOW(),created_at)
 @router.post("/log_history")
 def log_employee_history(emp_id: int, days_employed: int, day_wage: float, in_dept: str):
     """

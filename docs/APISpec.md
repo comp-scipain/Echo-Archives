@@ -1,8 +1,5 @@
 # API Specification for Echo Archive
 
-Get Employees (GET)  #Could implement an option to choose specific department or whole company
-
-Search Employees (GET)
 
 
 ### Promote Employee - `/employee/promote` (POST)
@@ -129,6 +126,11 @@ A call to Reset App will erase all saved data. Should only be called when the us
 ### Fire Employee - `/employee/delete` (POST)
 Fire an employee (remove from database) based on a specified ID
 
+
+### Get Total - `/employee` (POST)
+
+
+## 
 
 ### OLD STUFF FROM PREVIOUS PROJECT
 ### Get User Workouts - `/workouts/{user_id}` (GET)
