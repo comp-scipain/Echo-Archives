@@ -142,6 +142,11 @@ def promote_employee(employee_id: int):
             {"level": new_level, "pay": new_pay, "id": employee_id}
         )
 
+        print("Logging changes")
+        department = employee[4]
+        days_employed = connection.execute(sqlalchemy.text("SELECT EXTRACT(DAY FROM NOW()) - EXTRACT(DAY FROM hire_date) FROM employees WHERE id = :id"),[{"id":employee_id}]).scalar_one()
+        log_employee_history(employee_id, days_employed, new_pay, department)
+
         print(f"Promoted employee: {employee[1]} to level {new_level} with new pay: ${new_pay}")
         return {"status": "OK", "new_level": new_level, "new_pay": new_pay}
 
@@ -170,6 +175,11 @@ def demote_employee(employee_id: int):
             {"level": new_level, "pay": new_pay, "id": employee_id}
         )
 
+        print("Logging changes")
+        department = employee[4]
+        days_employed = connection.execute(sqlalchemy.text("SELECT EXTRACT(DAY FROM NOW()) - EXTRACT(DAY FROM hire_date) FROM employees WHERE id = :id"),[{"id":employee_id}]).scalar_one()
+        log_employee_history(employee_id, days_employed, new_pay, department)
+
         print(f"Demoted employee: {employee[1]} to level {new_level} with new pay: ${new_pay}")
         return {"status": "OK", "new_level": new_level, "new_pay": new_pay}
 
@@ -185,7 +195,7 @@ def transfer_employee(employee_id: int, new_department: str):
             sqlalchemy.text("SELECT id, name, skills, pay, department, level FROM employees WHERE id = :id"), 
             {"id": employee_id}
         ).fetchone()
-
+        
         if not employee:
             raise HTTPException(status_code=404, detail="Employee not found")
 
@@ -221,6 +231,10 @@ def transfer_employee(employee_id: int, new_department: str):
             sqlalchemy.text("UPDATE dept SET dept_populus = dept_populus + 1 WHERE dept_name = :dept_name"),
             {"dept_name": new_department}
         )
+
+        print("Logging changes")
+        days_employed = connection.execute(sqlalchemy.text("SELECT EXTRACT(DAY FROM NOW()) - EXTRACT(DAY FROM hire_date) FROM employees WHERE id = :id"),[{"id":employee_id}]).scalar_one()
+        log_employee_history(employee_id, days_employed, new_base_pay, new_department)
 
         print(f"Transferred employee: {employee[1]} to new department {new_department} with new pay: ${new_base_pay} and level reset to 0")
         return {"status": "OK", "new_department": new_department, "new_pay": new_base_pay, "new_level": 0}
