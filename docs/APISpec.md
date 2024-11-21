@@ -1,6 +1,6 @@
 # API Specification for Echo Archive
 
-
+## Employees
 
 ### Promote Employee - `/employee/promote` (POST)
 Promotes an employee by increasing their level by 1 and increasing their pay by approximately 7%.
@@ -36,21 +36,7 @@ Response:
 }
 ```
 
-### Create New Department (POST)
-Adds a new department to the database 
-
-Request:
-```python
-[
-  {
-    "name": str,
-    "basepay": int,
-    "population": int
-  }
-]
-```
-
-### Transfer Employee (POST)
+### Transfer Employee - `/employee/transfer` (POST)
 Transfers an employee to a new department, resetting their pay, level, and updating department population.
 
 Request:
@@ -68,9 +54,7 @@ Response:
 }
 ```
 
-///Get Department Employees (GET) #Could merge with Get Employees
 
-/Get Department Payroll (GET)
 
 
 ### Get Employees - `/employee/get` (GET)
@@ -125,118 +109,118 @@ A call to Reset App will erase all saved data. Should only be called when the us
 
 ### Fire Employee - `/employee/delete` (POST)
 Fire an employee (remove from database) based on a specified ID
-
-
-### Get Total - `/employee` (POST)
-
-
-## 
-
-### OLD STUFF FROM PREVIOUS PROJECT
-### Get User Workouts - `/workouts/{user_id}` (GET)
-Retrieves a list of workouts that are associated with user id.
-
+Request:
+```python
+{
+  "employee_id": int
+}
+```
 Response:
 ```python
-[
-  {
-    "workouts": str[],
-  }
-]
+{
+  "status":"OK"
+}
 ```
 
-### Add User - `/users` (POST)
-Adds a user to the database
+### Get Total Paid By Employee - `/employee/total_paid` (POST)
+Calculates the total paid value for a specific employee and aggregates this total by department.
 
 Request:
 ```python
-[
-  {
-    "first_name": int,
-    "last_name": int,
-  }
-]
+
+```
+Response:
+```python
+
 ```
 
-### Add a Workout to a User - `/users/{user_id}/workouts` (POST)
-Adds a new workout to a user's account.
+### Log Employee History (POST)
+Logs an employee's history into the history table. (Gets Called automatically whenever `/employee/promote`, `/employee/transfer`, or `/employee/demote` are called. It can also be called manually)
+
+Request:
+```python
+{
+  "Employee_id": int,
+  "days_employed": int,
+  "day_wage": float,
+  "department": str
+}
+```
+Response:
+```python
+{
+  "status": "OK"
+}
+```
+
+## Departments  
+
+### Create New Department - `/Departments/new` (POST)
+Adds a new department to the database 
 
 Request:
 ```python
 [
   {
     "name": str,
-    "sets": int,
-    "reps": int[],
-    "weight": int[],
-    "rest_time": int[],
+    "basepay": int,
+    "population": int
   }
 ]
 ```
+Response:
+```python
+{
+  "Status": "OK"
+}
+```
 
-### Get Muscle Distribution - `/analysis/{user_id}/distribution/` (GET)
-Retrieves the muscle distribution of the workouts for a given user.
+
+### Get Total Department Pay - `/department/daily_pay` (POST)
+Returns the total pay for all employees in the specified department
+
+Request:
+```python
+{
+  "department_name": str
+}
+```
 
 Response:
 ```python
-[
-  {
-    "result": Distribution;
-  }
-]
+{
+  "status": "OK",
+  "total_paid_by_department": list
+}
 ```
+
+### Get Total Paid By Department - `/departments/total_paid` (POST)
+Calculates the total paid value for each employee by multiplying their wage by the days employed, and aggregates this total by department.
+
+Request:
 ```python
-class Distribution:
-  "chest": int,
-  "back": int,
-  "biceps": int,
-  "triceps": int,
-  "shoulders": int,
-  "glutes": int,
-  "calves": int,
-  "quads": int,
-  "hamstrings": int,
-  ...
+
 ```
-
-### Get Workout Analysis - `/analysis/{user_id}/` (GET)
-Returns a general analysis of a user's workout.
-
 Response:
 ```python
-[
-  {
-    "average_duration": int,
-    "average_workouts_per_week": int,
-    "average_cals_burned_per_workout": int,
-    "progression": Literal["very slow", "slow", "average", "fast", "very fast"]
-  }
-]
+{
+  "status": "OK",
+  "total_paid_by_department": list
+}
 ```
 
-### Get Workout Improvement Tips - `/analysis/{user_id}/tips/` (GET)
-Analyzes a user's workout routine and returns improvement tips.
-
+### Get Department History - `/department/history` (GET)
+Fetches the employment history of all employees who were in the specified department, aggregating the days employed for each employee.
+Request:
+```python
+{
+  "department_name": str
+}
+```
 Response:
 ```python
-[
-  {
-    "sets": {
-        "analysis": Literal["low", "just_right", "excessive"],
-        "target": int,
-      },
-    "reps": {
-        "analysis": Literal["low", "just_right", "excessive"],
-        "target": int,
-      },
-    "weight": {
-        "analysis": Literal["low", "just_right", "excessive"],
-        "target": int,
-      },
-    "rest_time": {
-        "analysis": Literal["low", "just_right", "excessive"],
-        "target": int,
-      }
-  }
-]
+{
+  "Status": "OK"
+  "department_history": list[employee_history]
+}
 ```
