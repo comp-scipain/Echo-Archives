@@ -62,62 +62,23 @@ with engine.begin() as conn:
 
 num_users = 1000000
 fake = Faker()
-posts_sample_distribution = np.random.default_rng().negative_binomial(0.04, 0.01, num_users)
-category_sample_distribution = np.random.choice([1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-                                                 num_users,
-                                                p=[0.1, 0.05, 0.1, 0.3, 0.05, 0.05, 0.05, 0.05, 0.15, 0.1])
-total_posts = 0
 
-# create fake posters with fake names and birthdays
+# create fake employee data
 with engine.begin() as conn:
     print("creating fake data...")
-    posts = []
     for i in range(num_users):
         if (i % 10 == 0):
             print(i)
         
         profile = fake.profile()
-        username = fake.unique.email()
-        device_type = fake.random_element(elements=('Android', 'iOS', 'Web'))
-
-
+        departments = fake.sentence()
+        skills = fake.words()
         pay, base_pay, day_wage = fake.pyfloat()
-        dept_id, dept_populus, level, id, emp_id, ledger_id = fake.pyint()
+        dept_id, dept_populus, level, _id, emp_id, ledger_id = fake.pyint()
 
         dept = conn.execute(sqlalchemy.text("INSERT INTO dept (dept_name, dept_id, base_pay, dept_populus) VALUES (:dept_name, :dept_id, :base_pay, :dept_populus)"),
-        {"dept_name":,"dept_id":dept_id,"base_pay":base_pay,"dept_populus":dept_populus})
+        {"dept_name": departments,"dept_id":dept_id,"base_pay":base_pay,"dept_populus":dept_populus})
 
         employees = conn.execute(sqlalchemy.text("INSERT INTO employee (id, name, skills, pay, department, level, hire_date) VALUES (:id, :name, :skills, :pay, :department, :level, :hire_date)"),
-        {"id":id,"name":,"skills":,"pay":pay,"department":,"level":level,"hire_date":})
-
-        history = conn.execute(sqlalchemy.text("INSERT INTO history (ledger_id, created_at, emp_name, day_wage, in_dept, emp_id) VALUES (:ledger_id, :created_at,:emp_name,:day_wage,:in_dept,:emp_id)"),
-        {"ledger_id":ledger_id,"created_at":,"emp_name","day_wage":day_wage,"in_dept":,"emp_id":})
-
-
-        poster_id = conn.execute(sqlalchemy.text("""
-        INSERT INTO users (username, full_name, birthday, device_type) VALUES (:username, :name, :birthday, :device_type) RETURNING id;
-        """), {"username": username, "name": profile['name'], "birthday": profile['birthdate'], "device_type": device_type}).scalar_one()
-
-        num_posts = posts_sample_distribution[i]
-        likes_sample_distribution = np.random.default_rng().negative_binomial(0.8, 0.0001, num_posts)  
-        for j in range(num_posts):
-            total_posts += 1
-            posts.append({
-                "title": fake.sentence(),
-                "content": fake.text(),
-                "poster_id": poster_id,
-                "category_id": category_sample_distribution[i].item(),
-                "visible": fake.boolean(75),
-                "created_at": fake.date_time_between(start_date='-5y', end_date='now', tzinfo=None),
-                "likes": likes_sample_distribution[j].item(),
-                "nsfw": fake.boolean(10)
-            })
-
-    if posts:
-        conn.execute(sqlalchemy.text("""
-        INSERT INTO posts (title, content, poster_id, category_id, visible, created_at) 
-        VALUES (:title, :content, :poster_id, :category_id, :visible, :created_at);
-        """), posts)
-
-    print("total posts: ", total_posts)
+        {"id":_id,"name":profile['name'],"skills":skills,"pay":pay,"department":departments,"level":level})
     
