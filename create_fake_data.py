@@ -11,7 +11,7 @@ def database_connection_url():
     DB_SERVER: str = os.environ.get("POSTGRES_SERVER")
     DB_PORT: str = os.environ.get("POSTGRES_PORT")
     DB_NAME: str = os.environ.get("POSTGRES_DB")
-    return f"postgresql+psycopg2://postgres.your-tenant-id:{DB_PASSWD}@{DB_SERVER}:{DB_PORT}/{DB_NAME}"
+    return f"postgresql+psycopg2://{DB_USER}:{DB_PASSWD}@{DB_SERVER}:{DB_PORT}/{DB_NAME}"
 
 # Create a new DB engine based on our connection string
 engine = sqlalchemy.create_engine(database_connection_url(), use_insertmanyvalues=True, pool_pre_ping=True)
@@ -70,22 +70,23 @@ with engine.begin() as conn:
         if (i % 10 == 0):
             print(i)
         
+        emp_id = fake.pyint()
         profile = fake.profile()
         departments = fake.sentence()
-        skills = fake.words()
-        pay = fake.pyfloat()
-        base_pay = fake.pyfloat()
-        day_wage = fake.pyfloat()
+        skills = ", ".join(fake.words())
+        base_pay = fake.pyfloat(positive = True, min_value= 30000, max_value= 150000)
+        pay = fake.pyfloat(positive=True, min_value = base_pay, max_value = 180000)
+        day_wage = base_pay / 260 #260 working days in a year
         dept_id = fake.pyint()
         dept_populus = fake.pyint()
-        level = fake.pyint()
-        _id = fake.pyint()
-        emp_id = fake.pyint()
-        ledger_id = fake.pyint()
+        level = fake.pyint(min_value= -2, max_value = 12)
+        days_employed = fake.pyint(min_value=1, max_value=10000)
 
-        dept = conn.execute(sqlalchemy.text("INSERT INTO dept (dept_name, dept_id, base_pay, dept_populus) VALUES (:dept_name, :dept_id, :base_pay, :dept_populus)"),
-        {"dept_name": departments,"dept_id":dept_id,"base_pay":base_pay,"dept_populus":dept_populus})
+        dept = conn.execute(sqlalchemy.text("INSERT INTO dept (dept_name, base_pay, dept_populus) VALUES (:dept_name, :base_pay, :dept_populus)"),
+        {"dept_name": departments,"base_pay":base_pay,"dept_populus":dept_populus})
 
-        employees = conn.execute(sqlalchemy.text("INSERT INTO employees (id, name, skills, pay, department, level) VALUES (:id, :name, :skills, :pay, :department, :level)"),
-        {"id":_id,"name":profile['name'],"skills":skills,"pay":pay,"department":departments,"level":level})
+        employees = conn.execute(sqlalchemy.text("INSERT INTO employees ( name, skills, pay, department, level) VALUES ( :name, :skills, :pay, :department, :level)"),
+        {"name":profile['name'],"skills":skills,"pay":pay,"department":departments,"level":level})
     
+        history = conn.execute(sqlalchemy.text("INSERT INTO history (emp_name, days_employed, day_wage, in_dept, emp_id)  VALUES (:emp_name, :days_employed, :day_wage, :in_dept, :emp_id)"), 
+        { "emp_name": profile['name'], "days_employed": days_employed, "day_wage": day_wage, "in_dept": departments, "emp_id": emp_id })
