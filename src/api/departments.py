@@ -5,8 +5,8 @@ import sqlalchemy
 from src import database as db
 
 router = APIRouter (
-    prefix="/Departments",
-    tags=["Departments"],
+    prefix="/departments",
+    tags=["departments"],
     dependencies=[Depends(auth.get_api_key)],
 )
 
@@ -16,7 +16,7 @@ class Department(BaseModel):
     population: int
 
 
-@router.post("/new/")
+@router.post("/new")
 def add_new_department(dept: Department):
     """
     Add a new department to the Database
@@ -32,7 +32,7 @@ def add_new_department(dept: Department):
 
 
 
-@router.get("/department/daily_pay")
+@router.get("/daily_pay")
 def get_total_department_pay(department_name: str):
     """
     Returns the total pay for all employees in the specified department
@@ -43,7 +43,7 @@ def get_total_department_pay(department_name: str):
             {"department_name": department_name}
         ).fetchone()
 
-        if not result or result[0] is None:
+        if not result or not result[0]:
             raise HTTPException(status_code=404, detail="Department not found or no employees in the department")
 
         total_pay = result[0]
@@ -51,7 +51,7 @@ def get_total_department_pay(department_name: str):
         print(f"Total pay for department {department_name} is: ${total_pay:.2f}")
         return {"department": department_name, "total_pay": total_pay}
 
-@router.post("/departments/total_paid")
+@router.post("/total_paid")
 def get_total_paid_by_department():
     """
     Calculates the total paid value for each employee by multiplying their wage by the days employed,
@@ -89,7 +89,7 @@ def get_total_paid_by_department():
         raise HTTPException(status_code=500, detail="An error occurred while calculating the total paid by department")
 
 
-@router.get("/department/history")
+@router.get("/history")
 def get_department_history(department_name: str):
     """
     Fetches the employment history of all employees who were in the specified department,

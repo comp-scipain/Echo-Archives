@@ -16,8 +16,8 @@ create table
         hire_date timestamp with time zone not null,
         name text null,
         skills text null,
-        pay REAL
-        department text null
-        level integer
+        pay FLOAT,
+        department text null,
+        level integer,
         CONSTRAINT employees_pkey PRIMARY KEY (employee_id)
     ) tablespace pg_default;

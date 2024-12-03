@@ -6,7 +6,7 @@ from src import database as db
 
 router = APIRouter(
     prefix="/employee",
-    tags=["Employee"],
+    tags=["employee"],
     dependencies=[Depends(auth.get_api_key)],
 )
 
@@ -31,15 +31,15 @@ def get_employee_stats(emp_id: int):
         result = connection.execute(
             sqlalchemy.text("SELECT name, skills, pay, department, level FROM employees WHERE id = :id"),
             {"id": emp_id}).fetchone()
-        if result is None:
+        if not result:
             raise HTTPException(status_code=404, detail="Employee not found")
-        name, skills, pay, department, level = result
+        result_name, reuslt_skills, result_pay, result_department, result_level = result
         return Employee(
-            name=name,
-            skills=skills,
-            pay=pay,
-            department=department,
-            level=level
+            name=result_name,
+            skills=reuslt_skills,
+            pay=result_pay,
+            department=result_department,
+            level=result_level
         )
 
 
@@ -54,7 +54,15 @@ def get_all_employee_stats():
             sqlalchemy.text("SELECT name, skills, pay, department, level FROM employees")).fetchall()
         if not employees:
             raise HTTPException(status_code=404, detail="No employees found")
-        return [Employee(name=e.name, skills=e.skills, pay=e.pay, department=e.department, level=e.level) for e in employees]
+        return [
+                Employee(
+                    name=e.name, 
+                    skills=e.skills, 
+                    pay=e.pay, 
+                    department=e.department, 
+                    level=e.level) 
+                    for e in employees
+                ]
 
 
 @router.post("/add")
@@ -239,15 +247,6 @@ def transfer_employee(employee_id: int, new_department: str):
         print(f"Transferred employee: {employee[1]} to new department {new_department} with new pay: ${new_base_pay} and level reset to 0")
         return {"status": "OK", "new_department": new_department, "new_pay": new_base_pay, "new_level": 0}
 
-
-
-@router.post("/search")
-def search_employees():
-    """
-    Search for specific employees
-    """
-    print("Not currently implemented :(")
-    raise HTTPException(status_code=501, detail="Not currently implemented")
 
 #Note: in order to get the days employed we could use DATEDIFF(NOW(),created_at)
 @router.post("/log_history")
