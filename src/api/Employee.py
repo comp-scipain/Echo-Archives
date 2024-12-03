@@ -240,15 +240,6 @@ def transfer_employee(employee_id: int, new_department: str):
         return {"status": "OK", "new_department": new_department, "new_pay": new_base_pay, "new_level": 0}
 
 
-
-@router.post("/search")
-def search_employees():
-    """
-    Search for specific employees
-    """
-    print("Not currently implemented :(")
-    raise HTTPException(status_code=501, detail="Not currently implemented")
-
 #Note: in order to get the days employed we could use DATEDIFF(NOW(),created_at)
 @router.post("/log_history")
 def log_employee_history(emp_id: int, days_employed: int, day_wage: float, in_dept: str):
