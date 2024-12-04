@@ -103,7 +103,7 @@ def add_new_employee(employee: NewEmployee):
                 {"dept_name": employee.department}
             )
             id = connection.execute(sqlalchemy.text("SELECT id FROM employees WHERE name = :name, skills = :skills, pay = :pay, department = :department, level = :level"),
-            {"name": employee.name, "skills": employee.skills, "pay": employee.pay, "department": employee.department, "level": employee.level})
+            {"name": employee.name, "skills": employee.skills, "pay": employee.pay, "department": employee.department, "level": employee.level}).scalar()
             print("Done")
             return {"id": id}
         
