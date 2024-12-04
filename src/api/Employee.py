@@ -26,7 +26,7 @@ class Employee(BaseModel):
     level: int
 
 
-@router.post("/stats", response_model=Employee)
+@router.get("/stats", response_model=Employee)
 def get_employee_stats(emp_id: int):
     with db.engine.begin() as connection:
         result = connection.execute(
@@ -45,7 +45,7 @@ def get_employee_stats(emp_id: int):
         )
 
 
-@router.post("/get")
+@router.get("/{employee_id}/get")
 def get_all_employee_stats():
     """
     Get a list of all the current employees
@@ -109,7 +109,7 @@ def add_new_employee(employee: NewEmployee):
             raise HTTPException(status_code=500, detail="An error occurred while adding the employee")
 
 
-@router.post("/delete")
+@router.delete("/{employee_id}/delete")
 def fire_employee(employee_id: int):
     """
     Removes a specific employee from the database based on the employee_id passed in
@@ -132,7 +132,7 @@ def fire_employee(employee_id: int):
     return {"status": "OK"}
 
 
-@router.post("/promote")
+@router.post("/{employee_id}/promote")
 def promote_employee(employee_id: int):
     """
     Promotes an employee by increasing their level by 1 and increasing their pay by approximately 7%
@@ -164,7 +164,7 @@ def promote_employee(employee_id: int):
     return {"status": "OK", "new_level": new_level, "new_pay": new_pay}
 
 
-@router.post("/demote")
+@router.post("/{employee_id}/demote")
 def demote_employee(employee_id: int):
     """
     Demotes an employee by decreasing their level by 1 and decreasing their pay by approximately 7%
@@ -197,7 +197,7 @@ def demote_employee(employee_id: int):
     return {"status": "OK", "new_level": new_level, "new_pay": new_pay}
 
 
-@router.post("/transfer")
+@router.post("/{employee_id}/transfer")
 def transfer_employee(employee_id: int, new_department: str):
     """
     Transfers an employee to a new department, resetting their pay, level, and updating dept_populus.
@@ -289,7 +289,7 @@ def log_employee_history(emp_id: int, days_employed: int, day_wage: float, in_de
         raise HTTPException(status_code=500, detail="An error occurred while logging the employee's history")
 
 
-@router.get("/employee/total_paid")
+@router.get("/{employee_id}/total_paid")
 def get_total_paid_by_employee(emp_id: int):
     """
     Calculates the total paid value for a specific employee by multiplying their wage by the days employed,

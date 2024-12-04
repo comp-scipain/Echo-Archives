@@ -28,15 +28,23 @@ We did not add either a comprehensive review system or a proper budget audit for
 
 Test case 1 works as intended, but as mention the `/employee/add` endpoint is limited to adding one employee at a time. We won't modify it to allow for batch additions due to time constraints.
 Test case 2 works as intended. We also changed `/employee/get` so that it also returns employee id.
-Test case 3 .
+Test case 3 mostly works as intended. Running this test case exposed a mistake in our schema that has been fixed (emp_name in the history was mistakenly set to be unique).
 
 ## Code Review Comments (Sue Sue) #18 
 
+
+
 ## Schema/API Design Comments (Sue Sue) #17 
+
+Fixed the naming conflict in dept table, added missing commas, changed the data types and names of some fields to be more consistent and make more sense in schema.sql. Also added some important notes and added more specific URLS to APISpec.md and the project. Also added some missing response and request bodies in the APISpec.
 
 ## Test results (Carson Olander) #16 
 
+
+
 ## Schema/API Design comments (Carson Olander) #15 
+
+
 
 ## Code Review Comments (Tracy Huang) #13 
 
