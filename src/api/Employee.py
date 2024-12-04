@@ -29,11 +29,13 @@ class Employee(BaseModel):
 @router.get("/stats", response_model=Employee)
 def get_employee_stats(emp_id: int):
     with db.engine.begin() as connection:
-        result = connection.execute(
-            sqlalchemy.text("SELECT id, name, skills, pay, department, level FROM employees WHERE id = :id"),
-            {"id": emp_id}).fetchone()
-        if not result:
-            raise HTTPException(status_code=404, detail="Employee not found")
+        try:
+            result = connection.execute(
+                sqlalchemy.text("SELECT id, name, skills, pay, department, level FROM employees WHERE id = :id"),
+                {"id": emp_id}).one()
+        except sqlalchemy.exc.NoResultFound:
+            raise HTTPException(status_code=404, detail=f"Employee with id {emp_id} not found")
+        
         result_id,result_name, result_skills, result_pay, result_department, result_level = result
         return Employee(
             id=result_id,
@@ -147,7 +149,10 @@ def promote_employee(employee_id: int):
 
         if not employee:
             raise HTTPException(status_code=404, detail="Employee not found")
-        days_employed = connection.execute(sqlalchemy.text("SELECT EXTRACT(DAY FROM NOW()) - EXTRACT(DAY FROM hire_date) FROM employees WHERE id = :id"),[{"id":employee_id}]).scalar_one()
+            
+        days_employed = connection.execute(sqlalchemy.text("SELECT EXTRACT(DAY FROM NOW()) - EXTRACT(DAY FROM hire_date) FROM employees WHERE id = :id"),
+        [{"id":employee_id}]).scalar_one()
+
         new_level = employee[5] + 1  # Increment the level
         new_pay = round(employee[3] * 1.07, 2)  # Increase pay by 7% and round to 2 decimal places
         old_pay = employee[3]
@@ -183,7 +188,9 @@ def demote_employee(employee_id: int):
         new_level = employee[5] - 1  # Decrement the level
         new_pay = round(employee[3] * 0.93, 2)  # Decrease pay by 7% and round to 2 decimal places
         old_pay = employee[3]
-        days_employed = connection.execute(sqlalchemy.text("SELECT EXTRACT(DAY FROM NOW()) - EXTRACT(DAY FROM hire_date) FROM employees WHERE id = :id"),[{"id":employee_id}]).scalar_one()
+        days_employed = connection.execute(sqlalchemy.text("SELECT EXTRACT(DAY FROM NOW()) - EXTRACT(DAY FROM hire_date) FROM employees WHERE id = :id"),
+        [{"id":employee_id}]).scalar_one()
+
         # Update the employee's level and pay
         connection.execute(
             sqlalchemy.text("UPDATE employees SET level = :level, pay = :pay, hire_date = NOW() WHERE id = :id"),
