@@ -2,6 +2,8 @@ import sqlalchemy
 import os
 import dotenv
 from faker import Faker
+import random
+import requests
 
 def database_connection_url():
     dotenv.load_dotenv()
@@ -50,35 +52,162 @@ with engine.begin() as conn:
     ) TABLESPACE pg_default;
     """))
 
-num_users = 10
-fake = Faker()
 
-unique_departments = [fake.word() for _ in range(100)]
-department_base_pay = {dept: fake.pyfloat(positive=True, min_value=30000, max_value=150000) for dept in unique_departments}
+def create_departments(num_departments):
+    fake = Faker()
+    base_url = "http://localhost:8000"  # Replace with your FastAPI app URL
 
-with engine.begin() as conn:
-    print("Creating unique departments...")
+    unique_departments = [fake.word() for _ in range(num_departments)]
+    department_base_pay = {dept: fake.pyfloat(positive=True, min_value=300, max_value=1500) for dept in unique_departments}
+
     for dept in unique_departments:
-        conn.execute(sqlalchemy.text("INSERT INTO dept (dept_name, base_pay, dept_populus) VALUES (:dept_name, :base_pay, :dept_populus)"),
-        {"dept_name": dept, "base_pay": department_base_pay[dept], "dept_populus": 0})
+        department_data = {
+            "name": dept,
+            "basePay": department_base_pay[dept],
+            "population": 0
+        }
+        response = requests.post(f"{base_url}/departments/new", json=department_data)
+        if response.status_code != 200:
+            print(f"Failed to add department: {response.status_code}")
 
-    print("Creating fake employees and history records...")
-    for i in range(num_users):
-        if (i % 10000 == 0):
-            print(f"Inserted {i} employees")
+    return unique_departments, department_base_pay
+
+
+def add_employees(unique_departments):
+    fake = Faker()
+    base_url = "http://localhost:8000"  # Replace with your FastAPI app URL
+
+    for dept in unique_departments:
+        for _ in range(2):
+            employee_data = {
+                "name": fake.name(),
+                "skills": fake.words(),
+                "department": dept
+            }
+            response = requests.post(f"{base_url}/employee/add", json=employee_data)
+            if response.status_code != 200:
+                print(f"Failed to add employee: {response.status_code}")
+
+    emp_ids = []
+    with engine.connect() as conn:
+        result = conn.execute(sqlalchemy.text("SELECT id FROM employees"))
+        emp_ids = [row[0] for row in result.fetchall()]
+
+    return emp_ids
+
+def modify_employees(emp_ids, unique_departments):
+    fake = Faker()
+    base_url = "http://localhost:8000"  # Replace with your FastAPI app URL
+
+    for emp_id in emp_ids:
+        action = random.choice(['promote', 'demote', 'transfer'])
+
+        if action == 'promote':
+            response = requests.post(f"{base_url}/employee/promote", json={"employee_id": emp_id})
+            if response.status_code != 200:
+                print(f"Failed to promote employee: {response.status_code}")
+
+        elif action == 'demote':
+            response = requests.post(f"{base_url}/employee/demote", json={"employee_id": emp_id})
+            if response.status_code != 200:
+                print(f"Failed to demote employee: {response.status_code}")
+
+        elif action == 'transfer':
+            transfer_data = {
+                "employee_id": emp_id,
+                "new_department": fake.random_element(unique_departments)
+            }
+            response = requests.post(f"{base_url}/employee/transfer", json=transfer_data)
+            if response.status_code != 200:
+                print(f"Failed to transfer employee: {response.status_code}")
+
+
+num_departments = 200000
+
+# Step 1: Create Departments
+unique_departments, department_base_pay = create_departments(num_departments)
+
+# Step 2: Add Employees
+emp_ids = add_employees(unique_departments)
+
+# Step 3: Modify Employees
+modify_employees(emp_ids, unique_departments)
+
+
+
+    # print("Creating fake employees and history records...")
+    # for i in range(num_users):
+    #     if (i % 10000 == 0):
+    #         print(f"Inserted {i} employees")
         
-        emp_id = i + 1
-        profile = fake.profile()
-        skills = ", ".join(fake.words())
-        department = fake.random_element(unique_departments)
-        base_pay = department_base_pay[department]
-        pay = fake.pyfloat(positive=True, min_value=base_pay, max_value=180000)
-        day_wage = base_pay / 260  # 260 working days in a year
-        level = fake.pyint(min_value=-2, max_value=12)
-        days_employed = fake.pyint(min_value=1, max_value=10000)
+    #     emp_id = i + 1
+    #     profile = fake.profile()
+    #     skills = ", ".join(fake.words())
+    #     department = fake.random_element(unique_departments)
+    #     base_pay = department_base_pay[department]
+    #     pay = fake.pyfloat(positive=True, min_value=base_pay, max_value=180000)
+    #     day_wage = base_pay / 260  # 260 working days in a year
+    #     level = fake.pyint(min_value=-2, max_value=12)
+    #     days_employed = fake.pyint(min_value=1, max_value=10000)
 
-        conn.execute(sqlalchemy.text("INSERT INTO employees (name, skills, pay, department, level) VALUES (:name, :skills, :pay, :department, :level)"),
-        {"name": profile['name'], "skills": skills, "pay": pay, "department": department, "level": level})
+    #     conn.execute(sqlalchemy.text("INSERT INTO employees (name, skills, pay, department, level) VALUES (:name, :skills, :pay, :department, :level)"),
+    #     {"name": profile['name'], "skills": skills, "pay": pay, "department": department, "level": level})
 
-        conn.execute(sqlalchemy.text("INSERT INTO history (emp_name, days_employed, day_wage, in_dept, emp_id) VALUES (:emp_name, :days_employed, :day_wage, :in_dept, :emp_id)"),
-        {"emp_name": profile['name'], "days_employed": days_employed, "day_wage": day_wage, "in_dept": department, "emp_id": emp_id})
+    #     conn.execute(sqlalchemy.text("INSERT INTO history (emp_name, days_employed, day_wage, in_dept, emp_id) VALUES (:emp_name, :days_employed, :day_wage, :in_dept, :emp_id)"),
+    #     {"emp_name": profile['name'], "days_employed": days_employed, "day_wage": day_wage, "in_dept": department, "emp_id": emp_id})
+
+
+
+# Function to test the endpoints
+# def test_endpoints():
+#     base_url = "http://localhost:8000"  # Replace with the actual base URL of your FastAPI app
+
+#     # Example testing one endpoint
+#     for i in range(100):  # Adjust the number as needed for each endpoint
+#         # Fetch Total Department Pay
+#         department_name = unique_departments[fake.random_int(min=0, max=99)]
+#         response = requests.get(f"{base_url}/departments/daily_pay?department_name={department_name}")
+#         if response.status_code != 200:
+#             print(f"Failed to fetch department pay: {response.status_code}")
+
+#         # Calculate Total Paid by Department
+#         response = requests.post(f"{base_url}/departments/total_paid")
+#         if response.status_code != 200:
+#             print(f"Failed to calculate total paid by department: {response.status_code}")
+
+#         # Fetch Department History
+#         response = requests.get(f"{base_url}/departments/history?department_name={department_name}")
+#         if response.status_code != 200:
+#             print(f"Failed to fetch department history: {response.status_code}")
+
+#         # Fetch Employee Stats
+#         response = requests.post(f"{base_url}/employee/stats", json={"emp_id": emp_id})
+#         if response.status_code != 200:
+#             print(f"Failed to fetch employee stats: {response.status_code}")
+
+#         # Fetch All Employee Stats
+#         response = requests.post(f"{base_url}/employee/get")
+#         if response.status_code != 200:
+#             print(f"Failed to fetch all employee stats: {response.status_code}")
+
+#         # Log Employee History
+#         history_data = {
+#             "emp_id": emp_id,
+#             "days_employed": fake.pyint(min_value=1, max_value=1000),
+#             "day_wage": fake.pyfloat(positive=True, min_value=100, max_value=1000),
+#             "in_dept": fake.random_element(unique_departments)
+#         }
+#         response = requests.post(f"{base_url}/employee/log_history", json=history_data)
+#         if response.status_code != 200:
+#             print(f"Failed to log employee history: {response.status_code}")
+
+#         # Fetch Total Paid by Employee
+#         response = requests.get(f"{base_url}/employee/total_paid?emp_id={emp_id}")
+#         if response.status_code != 200:
+#             print(f"Failed to fetch total paid by employee: {response.status_code}")
+
+#         # Fire Employee
+#         response = requests.post(f"{base_url}/employee/delete", json={"employee_id": emp_id})
+#         if response.status_code != 200:
+#             print(f"Failed to fire employee: {response.status_code}")
+
