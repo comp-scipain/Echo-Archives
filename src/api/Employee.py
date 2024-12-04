@@ -100,9 +100,10 @@ def add_new_employee(employee: NewEmployee):
                 sqlalchemy.text("UPDATE dept SET dept_populus = dept_populus + 1 WHERE dept_name = :dept_name"),
                 {"dept_name": employee.department}
             )
-
+            id = connection.execute(sqlalchemy.text("SELECT id FROM employees WHERE name = :name, skills = :skills, pay = :pay, department = :department, level = :level"),
+            {"name": employee.name, "skills": employee.skills, "pay": employee.pay, "department": employee.department, "level": employee.level})
             print("Done")
-            return {"status": "OK"}
+            return {"id": id}
         
         except Exception as e:
             print(f"An error occurred: {e}")
