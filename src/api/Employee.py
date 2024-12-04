@@ -328,11 +328,7 @@ def get_total_paid_by_employee(emp_id: int):
             {"department": dept, "total_paid": round(total, 2)}
             for dept, total in department_totals.items()
         ]
-        employee = connection.execute(
-                sqlalchemy.text("SELECT name FROM employees WHERE id = :id"), 
-                {"id": emp_id}).fetchone()
         response = {
-            "Employee Name": employee,
             "total_paid": round(total_paid, 2),
             "total_paid_by_department": formatted_department_totals
         }
