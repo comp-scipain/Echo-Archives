@@ -18,6 +18,7 @@ class NewEmployee(BaseModel):
 
 
 class Employee(BaseModel):
+    id: int
     name: str
     skills: list[str]
     pay: float
@@ -29,14 +30,15 @@ class Employee(BaseModel):
 def get_employee_stats(emp_id: int):
     with db.engine.begin() as connection:
         result = connection.execute(
-            sqlalchemy.text("SELECT name, skills, pay, department, level FROM employees WHERE id = :id"),
+            sqlalchemy.text("SELECT id, name, skills, pay, department, level FROM employees WHERE id = :id"),
             {"id": emp_id}).fetchone()
         if not result:
             raise HTTPException(status_code=404, detail="Employee not found")
-        result_name, reuslt_skills, result_pay, result_department, result_level = result
+        result_id,result_name, result_skills, result_pay, result_department, result_level = result
         return Employee(
+            id=result_id,
             name=result_name,
-            skills=reuslt_skills,
+            skills=result_skills,
             pay=result_pay,
             department=result_department,
             level=result_level
@@ -51,11 +53,12 @@ def get_all_employee_stats():
     print("Reading employee data from database")
     with db.engine.begin() as connection:
         employees = connection.execute(
-            sqlalchemy.text("SELECT name, skills, pay, department, level FROM employees")).fetchall()
+            sqlalchemy.text("SELECT id, name, skills, pay, department, level FROM employees")).fetchall()
         if not employees:
             raise HTTPException(status_code=404, detail="No employees found")
         return [
                 Employee(
+                    id=e.id,
                     name=e.name, 
                     skills=e.skills, 
                     pay=e.pay, 

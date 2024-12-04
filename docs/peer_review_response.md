@@ -1,14 +1,16 @@
 ## Test Results (Zoila Kanu) #25 
 
-## Product Ideas (Zoila Kanu) #24
-We implemented something somewhat similar to the suggested `GET /employee/{employee_id}/company_job_history`, but it's a built-in function `` that gets called whenever an employee get promoted, demoted, or transfer.
+We were unable to reproduce the forbidden error described in any of the test cases described. It looks like the error might be caused by Postman.
 
-We decided to not implement giving employees off for lack of time. 
+## Product Ideas (Zoila Kanu) #24
+We implemented something somewhat similar to the suggested `GET /employee/{employee_id}/company_job_history`, but it's a built-in function `log_employee_history` that gets called whenever an employee get promoted, demoted, or transferred.
+
+We decided to not implement giving employees off due to time constraints. 
 
 
 ## Product ideas (Carson Olander) #23 
 
-Didn't add either product idea due to a lack of time.
+Didn't add either product idea due to time constraints.
 
 ## Schema/API Design Comments (Zoila Kanu) #22 
 
@@ -23,6 +25,10 @@ Changed the names of a couple variables to make slightly more sense as suggested
 We did not add either a comprehensive review system or a proper budget audit for a department. However, we did add promotions and demotions with a subsequent bonus or pay cut and an endpoint that returns how much each department is spending.
 
 ## Test Results (Sue Sue) #19 
+
+Test case 1 works as intended, but as mention the `/employee/add` endpoint is limited to adding one employee at a time. We won't modify it to allow for batch additions due to time constraints.
+Test case 2 works as intended. We also changed `/employee/get` so that it also returns employee id.
+Test case 3 .
 
 ## Code Review Comments (Sue Sue) #18 
 
