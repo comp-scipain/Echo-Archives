@@ -18,6 +18,7 @@ class NewEmployee(BaseModel):
 
 
 class Employee(BaseModel):
+    id: int
     name: str
     skills: list[str]
     pay: float
@@ -25,25 +26,26 @@ class Employee(BaseModel):
     level: int
 
 
-@router.post("/stats", response_model=Employee)
+@router.get("/stats", response_model=Employee)
 def get_employee_stats(emp_id: int):
     with db.engine.begin() as connection:
         result = connection.execute(
-            sqlalchemy.text("SELECT name, skills, pay, department, level FROM employees WHERE id = :id"),
+            sqlalchemy.text("SELECT id, name, skills, pay, department, level FROM employees WHERE id = :id"),
             {"id": emp_id}).fetchone()
         if not result:
             raise HTTPException(status_code=404, detail="Employee not found")
-        result_name, reuslt_skills, result_pay, result_department, result_level = result
+        result_id,result_name, result_skills, result_pay, result_department, result_level = result
         return Employee(
+            id=result_id,
             name=result_name,
-            skills=reuslt_skills,
+            skills=result_skills,
             pay=result_pay,
             department=result_department,
             level=result_level
         )
 
 
-@router.post("/get")
+@router.get("/{employee_id}/get")
 def get_all_employee_stats():
     """
     Get a list of all the current employees
@@ -51,11 +53,12 @@ def get_all_employee_stats():
     print("Reading employee data from database")
     with db.engine.begin() as connection:
         employees = connection.execute(
-            sqlalchemy.text("SELECT name, skills, pay, department, level FROM employees")).fetchall()
+            sqlalchemy.text("SELECT id, name, skills, pay, department, level FROM employees")).fetchall()
         if not employees:
             raise HTTPException(status_code=404, detail="No employees found")
         return [
                 Employee(
+                    id=e.id,
                     name=e.name, 
                     skills=e.skills, 
                     pay=e.pay, 
@@ -106,7 +109,7 @@ def add_new_employee(employee: NewEmployee):
             raise HTTPException(status_code=500, detail="An error occurred while adding the employee")
 
 
-@router.post("/delete")
+@router.delete("/{employee_id}/delete")
 def fire_employee(employee_id: int):
     """
     Removes a specific employee from the database based on the employee_id passed in
@@ -129,7 +132,7 @@ def fire_employee(employee_id: int):
     return {"status": "OK"}
 
 
-@router.post("/promote")
+@router.post("/{employee_id}/promote")
 def promote_employee(employee_id: int):
     """
     Promotes an employee by increasing their level by 1 and increasing their pay by approximately 7%
@@ -161,7 +164,7 @@ def promote_employee(employee_id: int):
     return {"status": "OK", "new_level": new_level, "new_pay": new_pay}
 
 
-@router.post("/demote")
+@router.post("/{employee_id}/demote")
 def demote_employee(employee_id: int):
     """
     Demotes an employee by decreasing their level by 1 and decreasing their pay by approximately 7%
@@ -194,7 +197,7 @@ def demote_employee(employee_id: int):
     return {"status": "OK", "new_level": new_level, "new_pay": new_pay}
 
 
-@router.post("/transfer")
+@router.post("/{employee_id}/transfer")
 def transfer_employee(employee_id: int, new_department: str):
     """
     Transfers an employee to a new department, resetting their pay, level, and updating dept_populus.
@@ -286,7 +289,7 @@ def log_employee_history(emp_id: int, days_employed: int, day_wage: float, in_de
         raise HTTPException(status_code=500, detail="An error occurred while logging the employee's history")
 
 
-@router.get("/employee/total_paid")
+@router.get("/{employee_id}/total_paid")
 def get_total_paid_by_employee(emp_id: int):
     """
     Calculates the total paid value for a specific employee by multiplying their wage by the days employed,
