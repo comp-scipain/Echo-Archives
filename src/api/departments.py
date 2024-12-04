@@ -17,15 +17,15 @@ class Department(BaseModel):
 
 
 @router.post("/new")
-def add_new_department(dept: Department):
+def add_new_department(dept_name: str, dept_basePay: float):
     """
     Add a new department to the Database
     """
-    print(f"Adding department named {dept.name} with ${dept.basePay} base pay and population {dept.population}.")
+    print(f"Adding department named {dept_name} with ${dept_basePay} base pay and population {0}.")
     with db.engine.begin() as connection:
         connection.execute(
             sqlalchemy.text("INSERT INTO dept (dept_name, base_pay, dept_populus) VALUES (:name, :pay, :popul)"),
-            {"name": dept.name, "pay": dept.basePay, "popul": 0}
+            {"name": dept_name, "pay": dept_basePay, "popul": 0}
         )
         print("Done")
     return {"status": "OK"}

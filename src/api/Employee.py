@@ -26,14 +26,16 @@ class Employee(BaseModel):
     level: int
 
 
-@router.post("/stats", response_model=Employee)
+@router.get("/stats", response_model=Employee)
 def get_employee_stats(emp_id: int):
     with db.engine.begin() as connection:
-        result = connection.execute(
-            sqlalchemy.text("SELECT id, name, skills, pay, department, level FROM employees WHERE id = :id"),
-            {"id": emp_id}).fetchone()
-        if not result:
-            raise HTTPException(status_code=404, detail="Employee not found")
+        try:
+            result = connection.execute(
+                sqlalchemy.text("SELECT id, name, skills, pay, department, level FROM employees WHERE id = :id"),
+                {"id": emp_id}).one()
+        except sqlalchemy.exc.NoResultFound:
+            raise HTTPException(status_code=404, detail=f"Employee with id {emp_id} not found")
+        
         result_id,result_name, result_skills, result_pay, result_department, result_level = result
         return Employee(
             id=result_id,
@@ -45,7 +47,7 @@ def get_employee_stats(emp_id: int):
         )
 
 
-@router.post("/get")
+@router.get("/{employee_id}/get")
 def get_all_employee_stats():
     """
     Get a list of all the current employees
@@ -100,16 +102,17 @@ def add_new_employee(employee: NewEmployee):
                 sqlalchemy.text("UPDATE dept SET dept_populus = dept_populus + 1 WHERE dept_name = :dept_name"),
                 {"dept_name": employee.department}
             )
-
+            id = connection.execute(sqlalchemy.text("SELECT id FROM employees WHERE name = :name AND skills = :skills AND department = :department"),
+            {"name": employee.name, "skills": employee.skills, "department": employee.department}).scalar()
             print("Done")
-            return {"status": "OK"}
+            return {"id": id}
         
         except Exception as e:
             print(f"An error occurred: {e}")
             raise HTTPException(status_code=500, detail="An error occurred while adding the employee")
 
 
-@router.post("/delete")
+@router.delete("/{employee_id}/delete")
 def fire_employee(employee_id: int):
     """
     Removes a specific employee from the database based on the employee_id passed in
@@ -133,7 +136,7 @@ def fire_employee(employee_id: int):
     return {"status": "OK"}
 
 
-@router.post("/promote")
+@router.post("/{employee_id}/promote")
 def promote_employee(employee_id: int):
     """
     Promotes an employee by increasing their level by 1 and increasing their pay by approximately 7%
@@ -147,7 +150,10 @@ def promote_employee(employee_id: int):
 
         if not employee:
             raise HTTPException(status_code=404, detail="Employee not found")
-        days_employed = connection.execute(sqlalchemy.text("SELECT EXTRACT(DAY FROM NOW()) - EXTRACT(DAY FROM hire_date) FROM employees WHERE id = :id"),[{"id":employee_id}]).scalar_one()
+            
+        days_employed = connection.execute(sqlalchemy.text("SELECT EXTRACT(DAY FROM NOW()) - EXTRACT(DAY FROM hire_date) FROM employees WHERE id = :id"),
+        [{"id":employee_id}]).scalar_one()
+
         new_level = employee[5] + 1  # Increment the level
         new_pay = round(employee[3] * 1.07, 2)  # Increase pay by 7% and round to 2 decimal places
         old_pay = employee[3]
@@ -165,7 +171,7 @@ def promote_employee(employee_id: int):
     return {"status": "OK", "new_level": new_level, "new_pay": new_pay}
 
 
-@router.post("/demote")
+@router.post("/{employee_id}/demote")
 def demote_employee(employee_id: int):
     """
     Demotes an employee by decreasing their level by 1 and decreasing their pay by approximately 7%
@@ -183,7 +189,9 @@ def demote_employee(employee_id: int):
         new_level = employee[5] - 1  # Decrement the level
         new_pay = round(employee[3] * 0.93, 2)  # Decrease pay by 7% and round to 2 decimal places
         old_pay = employee[3]
-        days_employed = connection.execute(sqlalchemy.text("SELECT EXTRACT(DAY FROM NOW()) - EXTRACT(DAY FROM hire_date) FROM employees WHERE id = :id"),[{"id":employee_id}]).scalar_one()
+        days_employed = connection.execute(sqlalchemy.text("SELECT EXTRACT(DAY FROM NOW()) - EXTRACT(DAY FROM hire_date) FROM employees WHERE id = :id"),
+        [{"id":employee_id}]).scalar_one()
+
         # Update the employee's level and pay
         connection.execute(
             sqlalchemy.text("UPDATE employees SET level = :level, pay = :pay, hire_date = NOW() WHERE id = :id"),
@@ -198,7 +206,7 @@ def demote_employee(employee_id: int):
     return {"status": "OK", "new_level": new_level, "new_pay": new_pay}
 
 
-@router.post("/transfer")
+@router.post("/{employee_id}/transfer")
 def transfer_employee(employee_id: int, new_department: str):
     """
     Transfers an employee to a new department, resetting their pay, level, and updating dept_populus.
@@ -290,7 +298,7 @@ def log_employee_history(emp_id: int, days_employed: int, day_wage: float, in_de
         raise HTTPException(status_code=500, detail="An error occurred while logging the employee's history")
 
 
-@router.get("/employee/total_paid")
+@router.get("/{employee_id}/total_paid")
 def get_total_paid_by_employee(emp_id: int):
     """
     Calculates the total paid value for a specific employee by multiplying their wage by the days employed,

@@ -1,58 +1,47 @@
-Bob is new to fitness. He has an idea of what muscles he wants to target but doesn’t know how to. Our API will give him a list of exercises when he specifies what muscles he wants to target.
+Sarah, an Engineering Manager at Cloud Corp, needs to submit quarterly performance reviews for her 15-person team before promotion discussions begin next month. She gives performance reviews for all of her employees using our api.
 
-Jamal has some experience in the weight room but he has been doing the same exact workouts for the past 3 years!! He thinks it’s time to start hitting a new muscle workout to improve his muscle growth. He tells our API the exercises he’s been doing and our api suggests new workouts.
+Mike from HR needs to track why Backend Engineering has had 3 demotions in the past quarter while Frontend Engineering is seeing consistent promotions. He checks the reviews to get to the bottom of this
 
-Carlos is a dedicated weight training gym rat. He wants to track the calories burned during his lifting sets. He uses our super cool API to track the calories burned when he inputs exercises, sets, and weight of the weights used.
+Jennifer, the CTO, wants metrics on which departments have the highest performing engineers to inform hiring and training strategies. She uses the metrics provided by the reviews endpoints to make her hiring decisions
 
-Sally is an olympian training for the next olympics. She has a feeling that there is a more efficient way to workout her muscles but she doesn’t know what that workout is. She asks our API about a more efficient way to workout and our API delivers. 
+David, a Tech Lead, needs to document that his junior developer has improved from a 2 to a 4 rating after completing a performance improvement plan. He updates his improvements using our database.
 
-As a person who has trouble staying motivated enough to consistently go to the gym. I want to see that I’m making some kind of progress towards my fitness goals and not feel like I’m wasting my time and money at the gym. 
+Lisa in Platform Engineering wants to verify her performance history before discussing a potential promotion with her manager. She logs into her performance portal where all of her rating come up and she is mildly surprised.
 
-John is white-collar worker who’s free time is extremely valuable. He wants to be able to keep track of his workouts on his days off. So that he can make the most of his very limited free time.
+Alex, Director of Data Science, needs to compare performance scores across his teams to ensure fair review practices
 
-As a person who doesn’t know much about how to accomplish their fitness goals. I want to be able to figure out where I'm going wrong. So I can accomplish my fitness goals.
-
-Charlie wants to train in order to become a professional athlete and wants to keep close track of his workouts and so that he can figure out how he can improve his training regimen.
-
-
-As a freshman who recently entered college, Chris is new to weightlifting and wants to find ways to optimize his workout with longer breaks or less weight, so that he can maximize his muscle growth. 
-As a novice weightlifter, Sean wants to better distribute his workouts to target different muscle groups, so that he develops a more balanced build. 
-
-As a busy college student, Kevin often forgets which workouts he does for each muscle group and wants a way to plan his workouts for the week so that he can make the best use of his limited time at the gym. 
-
-As a professional football player, Leo wants to track his progress and history of the amount of weight he’s able to lift for each of the exercises he does regularly so that he knows if his time at the gym is meeting his goals.
 
 
 Exceptions:
 
-- Weight machine / workout isn’t in the database
+-Employee ID not found in database
 
-In the case that the user’s machine or workout isn’t in our database, the application will return back an error and list of similar workouts (e.g. target same muscle group), along with a message to create a custom workout.
+In this case, the system will return an error and list similar employee names that might be a match, along with a prompt to verify the correct ID with HR.
 
-- User doesn’t input their full workout
+-Manager forgets to input complete review
 
-In the case that the user forgets to document a part of their workout (e.g. no breaks in between sets), the user can call an API that inputs the missed activity so that the app will make recommendations based on missing data. 
+In the case that a manager submits an incomplete review (e.g., missing performance score or feedback), they can submit additional information through a supplement API endpoint that updates the existing review.
 
-- User inputs an invalid break time
+-User inputs invalid performance score
 
-In this case, the app will return an error indicating that the break time must be a positive integer. 
+In this case, the system will return an error indicating that performance scores must be between 1-5 integers.
 
-- User creates a custom workout that already exists
+-Manager creates a review that already exists for that period
 
-In this case, the app will return the existing workout and alert the user that the workout already exists. If the workout is different, then the user can override the response and the custom workout.
+In this case, the system will return the existing review and alert the manager of the duplicate. If this is an intended update, the manager can use the update endpoint instead.
 
-- The app can’t connect to database
+-System can't connect to HR database
 
-In this case, the app will show the user an error message with potential causes and fixes. If the app can’t connect to the internet, it will ask the user to check if they’re connected to the internet.
+In this case, the system will show an error message with potential causes and fixes. If it's a connection issue, it will prompt to check VPN connectivity and network status.
 
-- User enters an invalid weight
+-User enters invalid salary adjustment
 
-In this case, the app will return an error indicating that the weight must be a positive integer. 
+In this case, the system will return an error indicating that salary adjustments must be within approved percentage ranges.
 
-- User enters an invalid set number
+-User enters invalid employee level
 
-In this case, the app will return an error indicating that the set number must be a positive integer. 
+In this case, the system will return an error indicating that employee levels must be within the defined range (-2 to 12).
 
-- User enters invalid reps
+-User enters invalid review date
 
-In this case, the app will return an error indicating that the reps must be a positive integer. 
+In this case, the system will return an error indicating that review dates must be within the current review period.

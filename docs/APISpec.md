@@ -2,8 +2,9 @@
 
 ## Employees
 
-### Promote Employee - `/employee/promote` (POST)
+### Promote Employee - `/employee/{employee_id}/promote` (POST)
 Promotes an employee by increasing their level by 1 and increasing their pay by approximately 7%.
+(NOTE: This endpoint will fail if the specified employee_id doesn't exist)
 
 Request:
 ```python
@@ -19,8 +20,9 @@ Response:
 }
 ```
 
-### Demote Employee - `/employee/demote` (POST)
-Demotes an employee by decreasing their level by 1 and decreasing their pay by approximately 7%
+### Demote Employee - `/employee/{employee_id}/demote` (POST)
+Demotes an employee by decreasing their level by 1 and decreasing their pay by approximately 7% 
+(NOTE: This endpoint will fail if the specified employee_id doesn't exist)
 
 Request:
 ```python
@@ -36,7 +38,7 @@ Response:
 }
 ```
 
-### Transfer Employee - `/employee/transfer` (POST)
+### Transfer Employee - `/employee/{employee_id}/transfer` (POST)
 Transfers an employee to a new department, resetting their pay, level, and updating department population.
 
 Request:
@@ -75,7 +77,7 @@ Response:
 ]
 ```
 
-### Add New Employee - `/employee/add` (POST)
+### Add New Employee - `/employee/add` (GET)
 Add a new employee to the roster
 
 Request:
@@ -91,23 +93,11 @@ Request:
 ]
 ```
 
-### Search Employees - `/employee/search` (GET)
-Searches for employees based on specified query parameters
-
-**Query Parameters**
-- `employee_name`: The name of the employee.
-- `skills`: The muscle groups that the workout targets
-
-**Response**:
-- `results`: A list of each line item has the following properties:
-  - `employee_name`: A string that represents the name of the employee
-  - `skills`: A list of strings that represents the skills that each employee has
-
 
 ### Reset App - `/admin/reset/` (POST)
 A call to Reset App will erase all saved data. Should only be called when the user no longer uses the app and wants to delete everything.
 
-### Fire Employee - `/employee/delete` (POST)
+### Fire Employee - `/employee/{employee_id}/delete` (DELETE)
 Fire an employee (remove from database) based on a specified ID
 Request:
 ```python
@@ -122,16 +112,23 @@ Response:
 }
 ```
 
-### Get Total Paid By Employee - `/employee/total_paid` (POST)
+### Get Total Paid By Employee - `/employee/{employee_id}/total_paid` (POST)
 Calculates the total paid value for a specific employee and aggregates this total by department.
 
 Request:
 ```python
-
+{
+  "employee_id": int
+}
 ```
 Response:
 ```python
-
+{
+  "status": "OK",
+  "employee_name": str,
+  "total_paid": float,
+  "total_paid_by_department": float
+}
 ```
 
 ### Log Employee History (POST)
@@ -140,7 +137,7 @@ Logs an employee's history into the history table. (Gets Called automatically wh
 Request:
 ```python
 {
-  "Employee_id": int,
+  "employee_id": int,
   "days_employed": int,
   "day_wage": float,
   "department": str
@@ -155,28 +152,25 @@ Response:
 
 ## Departments  
 
-### Create New Department - `/Departments/new` (POST)
-Adds a new department to the database 
+### Create New Department - `/departments/new` (POST)
+Adds a new department to the database
 
 Request:
 ```python
-[
-  {
-    "name": str,
-    "basepay": int,
-    "population": int
-  }
-]
+{
+  "dept_name": str,
+  "dept_basePay": float
+}
 ```
 Response:
 ```python
 {
-  "Status": "OK"
+  "status": "OK"
 }
 ```
 
 
-### Get Total Department Pay - `/department/daily_pay` (POST)
+### Get Total Department Pay - `/departments/daily_pay` (POST)
 Returns the total pay for all employees in the specified department
 
 Request:
@@ -197,10 +191,6 @@ Response:
 ### Get Total Paid By Department - `/departments/total_paid` (POST)
 Calculates the total paid value for each employee by multiplying their wage by the days employed, and aggregates this total by department.
 
-Request:
-```python
-
-```
 Response:
 ```python
 {
@@ -209,7 +199,7 @@ Response:
 }
 ```
 
-### Get Department History - `/department/history` (GET)
+### Get Department History - `/departments/history` (GET)
 Fetches the employment history of all employees who were in the specified department, aggregating the days employed for each employee.
 Request:
 ```python
