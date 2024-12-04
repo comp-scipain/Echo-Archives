@@ -61,7 +61,11 @@ with engine.begin() as conn:
     """))
     
 
+<<<<<<< Updated upstream
 num_users = 10000
+=======
+num_users = 1000
+>>>>>>> Stashed changes
 fake = Faker()
 
 TECH_DEPARTMENTS = [
