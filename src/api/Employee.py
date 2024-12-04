@@ -102,7 +102,7 @@ def add_new_employee(employee: NewEmployee):
                 sqlalchemy.text("UPDATE dept SET dept_populus = dept_populus + 1 WHERE dept_name = :dept_name"),
                 {"dept_name": employee.department}
             )
-            id = connection.execute(sqlalchemy.text("SELECT MAX(id) FROM employees WHERE name = :name AND skills = :skills AND department = :department"),
+            id = connection.execute(sqlalchemy.text("SELECT id FROM employees WHERE name = :name AND skills = :skills AND department = :department"),
             {"name": employee.name, "skills": employee.skills, "department": employee.department}).scalar()
             print("Done")
             return {"id": id}
@@ -123,7 +123,7 @@ def fire_employee(employee_id: int):
         if not to_be_fired:
             raise HTTPException(status_code=404, detail="Employee not found")
         department = to_be_fired[4]
-        days_employed = connection.execute(sqlalchemy.text("SELECT EXTRACT(DAY FROM NOW()) - EXTRACT(DAY FROM hire_date) FROM employees WHERE id = :id"),[{"id":employee_id}]).scalar_one()
+        days_employed = connection.execute(sqlalchemy.text("SELECT EXTRACT(DAY FROM AGE(NOW(), hire_date))::INTEGER FROM employees WHERE id = :id"),{"id":employee_id}).scalar_one()
         wage = to_be_fired[3]
         print(f"This employee will be fired: {to_be_fired}")
     log_employee_history(employee_id, days_employed, wage, department)
@@ -151,8 +151,8 @@ def promote_employee(employee_id: int):
         if not employee:
             raise HTTPException(status_code=404, detail="Employee not found")
             
-        days_employed = connection.execute(sqlalchemy.text("SELECT EXTRACT(DAY FROM NOW()) - EXTRACT(DAY FROM hire_date) FROM employees WHERE id = :id"),
-        [{"id":employee_id}]).scalar_one()
+        days_employed = connection.execute(sqlalchemy.text("SELECT EXTRACT(DAY FROM AGE(NOW(), hire_date))::INTEGER FROM employees WHERE id = :id"),
+        {"id":employee_id}).scalar_one()
 
         new_level = employee[5] + 1  # Increment the level
         new_pay = round(employee[3] * 1.07, 2)  # Increase pay by 7% and round to 2 decimal places
@@ -189,8 +189,8 @@ def demote_employee(employee_id: int):
         new_level = employee[5] - 1  # Decrement the level
         new_pay = round(employee[3] * 0.93, 2)  # Decrease pay by 7% and round to 2 decimal places
         old_pay = employee[3]
-        days_employed = connection.execute(sqlalchemy.text("SELECT EXTRACT(DAY FROM NOW()) - EXTRACT(DAY FROM hire_date) FROM employees WHERE id = :id"),
-        [{"id":employee_id}]).scalar_one()
+        days_employed = connection.execute(sqlalchemy.text("SELECT EXTRACT(DAY FROM AGE(NOW(), hire_date))::INTEGER FROM employees WHERE id = :id"),
+        {"id":employee_id}).scalar_one()
 
         # Update the employee's level and pay
         connection.execute(
@@ -222,7 +222,7 @@ def transfer_employee(employee_id: int, new_department: str):
             raise HTTPException(status_code=404, detail="Employee not found")
 
         current_department = employee[4]
-        days_employed = connection.execute(sqlalchemy.text("SELECT EXTRACT(DAY FROM NOW()) - EXTRACT(DAY FROM hire_date) FROM employees WHERE id = :id"),[{"id":employee_id}]).scalar_one()
+        days_employed = connection.execute(sqlalchemy.text("SELECT EXTRACT(DAY FROM AGE(NOW(), hire_date))::INTEGER FROM employees WHERE id = :id"),{"id":employee_id}).scalar_one()
 
         if current_department == new_department:
             raise HTTPException(status_code=400, detail="Employee is already in the specified department")
