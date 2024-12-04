@@ -102,8 +102,8 @@ def add_new_employee(employee: NewEmployee):
                 sqlalchemy.text("UPDATE dept SET dept_populus = dept_populus + 1 WHERE dept_name = :dept_name"),
                 {"dept_name": employee.department}
             )
-            id = connection.execute(sqlalchemy.text("SELECT id FROM employees WHERE name = :name AND skills = :skills AND pay = :pay AND department = :department AND level = :level"),
-            {"name": employee.name, "skills": employee.skills, "pay": pay, "department": employee.department, "level": employee.level}).scalar()
+            id = connection.execute(sqlalchemy.text("SELECT id FROM employees WHERE name = :name AND skills = :skills AND department = :department"),
+            {"name": employee.name, "skills": employee.skills, "department": employee.department}).scalar()
             print("Done")
             return {"id": id}
         
