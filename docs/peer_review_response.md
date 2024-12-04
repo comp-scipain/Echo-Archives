@@ -48,7 +48,7 @@ Fixed the naming conflict in dept table, added missing commas, changed the data 
 
 ## Code Review Comments (Tracy Huang) #13 
 
-Implemented some of the reformating suggestions to help with readability that can be done quickly. Other suggestions like using aggregate functions will not be implement due to a lack of time.
+Implemented some of the reformating suggestions to help with readability that can be done quickly. Other suggestions like using aggregate functions will not be implement due to a lack of time. Regarding the comment about inconsistency of dept_populus, that function was partially rewritten since before a "department" object was used as a parameter. Now, it uses a name and base pay.
 
 ## Code Review Comments (Carson Olander) #12
 

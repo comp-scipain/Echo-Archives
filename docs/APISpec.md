@@ -157,18 +157,15 @@ Adds a new department to the database
 
 Request:
 ```python
-[
-  {
-    "name": str,
-    "basepay": int,
-    "population": int
-  }
-]
+{
+  "dept_name": str,
+  "dept_basePay": float
+}
 ```
 Response:
 ```python
 {
-  "Status": "OK"
+  "status": "OK"
 }
 ```
 
