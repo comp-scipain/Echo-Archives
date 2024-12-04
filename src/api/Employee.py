@@ -102,7 +102,7 @@ def add_new_employee(employee: NewEmployee):
                 sqlalchemy.text("UPDATE dept SET dept_populus = dept_populus + 1 WHERE dept_name = :dept_name"),
                 {"dept_name": employee.department}
             )
-            id = connection.execute(sqlalchemy.text("SELECT id FROM employees WHERE name = :name AND skills = :skills AND department = :department"),
+            id = connection.execute(sqlalchemy.text("SELECT MAX(id) FROM employees WHERE name = :name AND skills = :skills AND department = :department"),
             {"name": employee.name, "skills": employee.skills, "department": employee.department}).scalar()
             print("Done")
             return {"id": id}
@@ -126,11 +126,12 @@ def fire_employee(employee_id: int):
         days_employed = connection.execute(sqlalchemy.text("SELECT EXTRACT(DAY FROM NOW()) - EXTRACT(DAY FROM hire_date) FROM employees WHERE id = :id"),[{"id":employee_id}]).scalar_one()
         wage = to_be_fired[3]
         print(f"This employee will be fired: {to_be_fired}")
+    log_employee_history(employee_id, days_employed, wage, department)
+    with db.engine.begin() as connection:
         connection.execute(
             sqlalchemy.text("DELETE FROM employees WHERE id = :id"), {"id": employee_id})
         connection.execute(
             sqlalchemy.text("UPDATE dept SET dept_populus = dept_populus - 1 WHERE dept_name = :dept_name"), {"dept_name": department})
-    log_employee_history(employee_id, days_employed, wage, department)
     print("Done!")
     return {"status": "OK"}
 
