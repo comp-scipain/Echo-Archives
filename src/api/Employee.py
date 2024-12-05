@@ -102,14 +102,14 @@ def add_new_employee(employee: NewEmployee):
                 sqlalchemy.text("UPDATE dept SET dept_populus = dept_populus + 1 WHERE dept_name = :dept_name"),
                 {"dept_name": employee.department}
             )
-            id = connection.execute(sqlalchemy.text("SELECT MAX(id) FROM employees WHERE name = :name AND skills = :skills AND department = :department"),
+            id = connection.execute(sqlalchemy.text("SELECT id FROM employees WHERE name = :name AND skills = :skills AND department = :department"),
             {"name": employee.name, "skills": employee.skills, "department": employee.department}).scalar()
             print("Done")
             return {"id": id}
         
         except Exception as e:
             print(f"An error occurred: {e}")
-            raise HTTPException(status_code=500, detail="An error occurred while adding the employee")
+            raise HTTPException(status_code=500, detail="You are trying to add an employee to a department that might not exist")
 
 
 @router.delete("/{employee_id}/delete")
@@ -123,7 +123,7 @@ def fire_employee(employee_id: int):
         if not to_be_fired:
             raise HTTPException(status_code=404, detail="Employee not found")
         department = to_be_fired[4]
-        days_employed = connection.execute(sqlalchemy.text("SELECT EXTRACT(DAY FROM NOW()) - EXTRACT(DAY FROM hire_date) FROM employees WHERE id = :id"),[{"id":employee_id}]).scalar_one()
+        days_employed = connection.execute(sqlalchemy.text("SELECT EXTRACT(DAY FROM AGE(NOW(), hire_date))::INTEGER FROM employees WHERE id = :id"),{"id":employee_id}).scalar_one()
         wage = to_be_fired[3]
         print(f"This employee will be fired: {to_be_fired}")
     log_employee_history(employee_id, days_employed, wage, department)
@@ -133,7 +133,7 @@ def fire_employee(employee_id: int):
         connection.execute(
             sqlalchemy.text("UPDATE dept SET dept_populus = dept_populus - 1 WHERE dept_name = :dept_name"), {"dept_name": department})
     print("Done!")
-    return {"status": "OK"}
+    return {"status": f"Successfully fired the employee with id {employee_id}"}
 
 
 @router.post("/{employee_id}/promote")
@@ -151,8 +151,8 @@ def promote_employee(employee_id: int):
         if not employee:
             raise HTTPException(status_code=404, detail="Employee not found")
             
-        days_employed = connection.execute(sqlalchemy.text("SELECT EXTRACT(DAY FROM NOW()) - EXTRACT(DAY FROM hire_date) FROM employees WHERE id = :id"),
-        [{"id":employee_id}]).scalar_one()
+        days_employed = connection.execute(sqlalchemy.text("SELECT EXTRACT(DAY FROM AGE(NOW(), hire_date))::INTEGER FROM employees WHERE id = :id"),
+        {"id":employee_id}).scalar_one()
 
         new_level = employee[5] + 1  # Increment the level
         new_pay = round(employee[3] * 1.07, 2)  # Increase pay by 7% and round to 2 decimal places
@@ -189,8 +189,8 @@ def demote_employee(employee_id: int):
         new_level = employee[5] - 1  # Decrement the level
         new_pay = round(employee[3] * 0.93, 2)  # Decrease pay by 7% and round to 2 decimal places
         old_pay = employee[3]
-        days_employed = connection.execute(sqlalchemy.text("SELECT EXTRACT(DAY FROM NOW()) - EXTRACT(DAY FROM hire_date) FROM employees WHERE id = :id"),
-        [{"id":employee_id}]).scalar_one()
+        days_employed = connection.execute(sqlalchemy.text("SELECT EXTRACT(DAY FROM AGE(NOW(), hire_date))::INTEGER FROM employees WHERE id = :id"),
+        {"id":employee_id}).scalar_one()
 
         # Update the employee's level and pay
         connection.execute(
@@ -222,7 +222,7 @@ def transfer_employee(employee_id: int, new_department: str):
             raise HTTPException(status_code=404, detail="Employee not found")
 
         current_department = employee[4]
-        days_employed = connection.execute(sqlalchemy.text("SELECT EXTRACT(DAY FROM NOW()) - EXTRACT(DAY FROM hire_date) FROM employees WHERE id = :id"),[{"id":employee_id}]).scalar_one()
+        days_employed = connection.execute(sqlalchemy.text("SELECT EXTRACT(DAY FROM AGE(NOW(), hire_date))::INTEGER FROM employees WHERE id = :id"),{"id":employee_id}).scalar_one()
 
         if current_department == new_department:
             raise HTTPException(status_code=400, detail="Employee is already in the specified department")
@@ -264,7 +264,7 @@ def transfer_employee(employee_id: int, new_department: str):
 
 
 #Note: in order to get the days employed we could use DATEDIFF(NOW(),created_at)
-@router.post("/log_history")
+@router.post("{employee_id}/log_history")
 def log_employee_history(emp_id: int, days_employed: int, day_wage: float, in_dept: str):
     """
     Logs an employee's history into the history table.
@@ -291,7 +291,7 @@ def log_employee_history(emp_id: int, days_employed: int, day_wage: float, in_de
             )
 
             print(f"Logged history for employee: {employee[1]}")
-            return {"status": "OK"}
+            return {"status": f"Successfully logged history for {employee[1]}"}
 
     except Exception as e:
         print(f"An error occurred: {e}")
@@ -328,11 +328,7 @@ def get_total_paid_by_employee(emp_id: int):
             {"department": dept, "total_paid": round(total, 2)}
             for dept, total in department_totals.items()
         ]
-        employee = connection.execute(
-                sqlalchemy.text("SELECT name FROM employees WHERE id = :id"), 
-                {"id": emp_id}).fetchone()
         response = {
-            "Employee Name": employee,
             "total_paid": round(total_paid, 2),
             "total_paid_by_department": formatted_department_totals
         }

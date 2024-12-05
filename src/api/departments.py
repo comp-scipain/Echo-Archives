@@ -21,6 +21,8 @@ def add_new_department(dept_name: str, dept_basePay: float):
     """
     Add a new department to the Database
     """
+    if dept_basePay < 0:
+        return {"error":"dept_basePay can't be a negative number"}
     print(f"Adding department named {dept_name} with ${dept_basePay} base pay and population {0}.")
     with db.engine.begin() as connection:
         connection.execute(
@@ -28,7 +30,7 @@ def add_new_department(dept_name: str, dept_basePay: float):
             {"name": dept_name, "pay": dept_basePay, "popul": 0}
         )
         print("Done")
-    return {"status": "OK"}
+    return {"status": "Successfully added new department"}
 
 
 

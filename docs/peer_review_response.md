@@ -32,7 +32,7 @@ Test case 3 mostly works as intended. Running this test case exposed a mistake i
 
 ## Code Review Comments (Sue Sue) #18 
 
-We added more detailed error messages, and changed a couple paths to keep things consistent as suggested (i.e /Departments to /departments). 
+We added more detailed error messages, and changed a couple paths to keep things consistent as suggested (i.e /Departments to /departments). We won't be adding a boundary check for new_pay in Employee.py. After some testing, we found that the amount new_pay decreases by after each demotion decreases as it approaches 0 and it will stop decreasing once it reaches $0.07. The only way new_pay can be negative is if the user enters a negative base_pay in `departments/add`. Which we now have a check for. We also implemented the suggestion of giving additional context to endpoints that only returned "status":"OK".
 
 ## Schema/API Design Comments (Sue Sue) #17 
 
@@ -40,10 +40,48 @@ Fixed the naming conflict in dept table, added missing commas, changed the data 
 
 ## Test results (Carson Olander) #16 
 
-
+In  new test Case 1 the reason why it returned an error is that you were trying to add an employee to a department that doesn't exist. We changed the error message to make this fact more clear.
+New test Case 2 works as intended.
+New test Case 3 works as intended.
 
 ## Schema/API Design comments (Carson Olander) #15 
 
+    Schema.sql - dept_id twice in creating table. 
+    - Fixed
+
+    Schema.sql - employee.id should be employee_id to keep consistency.
+    - Fixed
+
+    Schema.sql - not ideal to store skills as a single column because it is a list and will require parsing to access specific skills within the list, additionally filtering queries on the skills column more difficult.
+    - Won't implement .
+
+    Schema.sql - could add employee's manager as a column.
+    - 
+
+    Schema.sql - employee table column department should have a foreign key reference to the dept_id column in the dept table.
+    - 
+
+    APISpec.md - Promote Employee return value doesn't match what is returned in the corresponding function in Employee.py
+    - Fixed
+
+    APISpec.md - Demote Employee return value doesn't match what is returned in the corresponding function in Employee.py
+    - Fixed
+
+    APISpec.md - New Department takes in a parameter for department population but should be hard coded to 0 because in the database there won't be any employees in that 
+    department yet.
+    - Fixed
+
+    APISpec.md - Transfer Employee return value doesn't match what is returned in the corresponding function in Employee.py
+    - Fixed
+
+    APISpec.md - Multiple POST specifications missing the expected "Response" body.
+    - Fixed
+
+    APISpec.md - Fire Employee missing expected Request and Response bodies.
+    - Fixed
+
+    APISpec.md - Reset app - missing expected Request and Response bodies.
+    - Fixed
 
 
 ## Code Review Comments (Tracy Huang) #13 
@@ -52,3 +90,40 @@ Implemented some of the reformating suggestions to help with readability that ca
 
 ## Code Review Comments (Carson Olander) #12
 
+
+    Employee.py - NewEmployee class is unnecessary since it is only used once to create a new employee. Instead just use parameters to pass in needed values.
+    -
+
+    Employee.py - in add_new_employee() method the base_pay can be passed as a SELECT for the pay in the VALUES part of the INSERT when creating the new employee instead 
+    of returning it as result to store in python and then passing it in.
+    -
+
+    Employee.py - in fire_employee instead of doing a SELECT query for the employee that will be fired, add "RETURING *" to the end of the DELETE query.
+    -
+
+    Employee.py - in promote_employee() instead of doing a SELECT query for the employee's level and pay to store as variable to update in python, update all values in the UPDATE query and add "RETURNING ..." for whatever values are wanted to be printed (employee's new level, employee's new pay, etc.).
+    -
+
+    Employee.py - in demote_employee() same as number 4 (promotion) but for demotion this time.
+    -
+
+    Employee.py - in transfer_employee() update employee's department and pay in UPDATE query instead of doing a SELECT query to store and update.
+    -
+
+    department.py - the Department class doesn't need a population variable because the class is currently only used to create a new department and the population of the department is hard coded to 0 in add_new_department().
+    - Fixed by removing the population parameter.
+
+    department.py - can use ROUND in SQL query on the total pay rather than when printing it.
+    -
+
+    departments.py - In add_new_department() return the row inserted into the table to show important info like dept_id to the user on the swagger ui instead of only printing to the render logs.
+    -
+
+    Employee.py - In add_new_employee() return the row inserted into the table to show important info about the new employee that wasn't provided by the user like employee_id to the swagger ui instead of only printing to the render logs.
+    -
+
+    Employee.py - In get_all_employee_stats() it would be helpful to return the employee's id number to do other actions like promote, demote, fire etc.
+    -
+
+    Employee.py - In get_employee_stats() it would be helpful to return the employee's id number to do other actions like promote, demote, fire etc.
+    -
