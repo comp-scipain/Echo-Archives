@@ -109,7 +109,7 @@ def add_new_employee(employee: NewEmployee):
         
         except Exception as e:
             print(f"An error occurred: {e}")
-            raise HTTPException(status_code=500, detail="An error occurred while adding the employee")
+            raise HTTPException(status_code=500, detail="You are trying to add an employee to a department that might not exist")
 
 
 @router.delete("/{employee_id}/delete")

@@ -16,7 +16,9 @@ Request:
 Response:
 ```python
 {
-  "success": bool,
+  "status": "OK", 
+  "new_level": int, 
+  "new_pay": float
 }
 ```
 
@@ -34,7 +36,9 @@ Request:
 Response:
 ```python
 {
-  "success": bool,
+  "status": "OK", 
+  "new_level": int, 
+  "new_pay": float
 }
 ```
 
@@ -44,7 +48,7 @@ Transfers an employee to a new department, resetting their pay, level, and updat
 Request:
 ```python
 {
-  "employee_is": int,
+  "employee_id": int,
   "new_department": str,
 }
 ```
@@ -52,11 +56,11 @@ Request:
 Response:
 ```python
 {
-  "success": bool,
+  "status": "OK", "new_department": str,
+  "new_pay": float, 
+  "new_level": int
 }
 ```
-
-
 
 
 ### Get Employees - `/employee/get` (GET)
