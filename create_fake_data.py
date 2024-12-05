@@ -75,7 +75,7 @@ with engine.begin() as conn:
     """))
     
 
-num_users = 1000
+num_users = 333317
 fake = Faker()
 
 TECH_DEPARTMENTS = [
@@ -98,7 +98,7 @@ SKILLS = [
    'Cybersecurity', 'Penetration Testing', 'Encryption', 'Network Security', 'Security Auditing', 'Ethical Hacking', 'OWASP', 'Security Compliance',
    'iOS Development', 'Android Development', 'React Native', 'Flutter', 'Xamarin', 'Mobile UI Design', 'App Store Optimization'
 ]
-
+#50 departments
 departments_list = []
 with engine.begin() as conn:
    print("Creating departments...")
