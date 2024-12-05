@@ -32,7 +32,7 @@ Test case 3 mostly works as intended. Running this test case exposed a mistake i
 
 ## Code Review Comments (Sue Sue) #18 
 
-We added more detailed error messages, and changed a couple paths to keep things consistent as suggested (i.e /Departments to /departments). 
+We added more detailed error messages, and changed a couple paths to keep things consistent as suggested (i.e /Departments to /departments). We won't be adding a boundary check for new_pay in Employee.py. After some testing, we found that the amount new_pay decreases by after each demotion decreases as it approaches 0 and it will stop decreasing once it reaches $0.07. The only way new_pay can be negative is if the user enters a negative base_pay in `departments/add`. Which we now have a check for. 
 
 ## Schema/API Design Comments (Sue Sue) #17 
 

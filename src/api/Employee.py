@@ -133,7 +133,7 @@ def fire_employee(employee_id: int):
         connection.execute(
             sqlalchemy.text("UPDATE dept SET dept_populus = dept_populus - 1 WHERE dept_name = :dept_name"), {"dept_name": department})
     print("Done!")
-    return {"status": "OK"}
+    return {"status": f"Successfully fired the employee with id {employee_id}"}
 
 
 @router.post("/{employee_id}/promote")
@@ -264,7 +264,7 @@ def transfer_employee(employee_id: int, new_department: str):
 
 
 #Note: in order to get the days employed we could use DATEDIFF(NOW(),created_at)
-@router.post("/log_history")
+@router.post("{employee_id}/log_history")
 def log_employee_history(emp_id: int, days_employed: int, day_wage: float, in_dept: str):
     """
     Logs an employee's history into the history table.
@@ -291,7 +291,7 @@ def log_employee_history(emp_id: int, days_employed: int, day_wage: float, in_de
             )
 
             print(f"Logged history for employee: {employee[1]}")
-            return {"status": "OK"}
+            return {"status": f"Successfully logged history for {employee[1]}"}
 
     except Exception as e:
         print(f"An error occurred: {e}")
