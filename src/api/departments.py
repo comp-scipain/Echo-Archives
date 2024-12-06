@@ -61,26 +61,19 @@ def get_total_paid_by_department():
     """
     try:
         with db.engine.begin() as connection:
-            history_records = connection.execute(
-                sqlalchemy.text("SELECT days_employed, day_wage, in_dept FROM history")
-            ).fetchall()
+            # Execute an optimized query to aggregate totals by department
+            history_records = connection.execute(sqlalchemy.text("""
+                SELECT in_dept AS department, SUM(days_employed * day_wage) AS total_paid
+                FROM history
+                GROUP BY in_dept
+            """)).fetchall()
 
             if not history_records:
                 raise HTTPException(status_code=404, detail="No history records found")
 
-            department_totals = {}
-            for record in history_records:
-                department = record[2]
-                total_paid = record[0] * record[1]  # days_employed * day_wage
-
-                if department in department_totals:
-                    department_totals[department] += total_paid
-                else:
-                    department_totals[department] = total_paid
-
             formatted_totals = [
-                {"department": dept, "total_paid": round(total, 2)}
-                for dept, total in department_totals.items()
+                {"department": record["department"], "total_paid": round(record["total_paid"], 2)}
+                for record in history_records
             ]
 
             print(f"Total paid by department: {formatted_totals}")
