@@ -11,12 +11,6 @@ router = APIRouter(
 )
 
 
-class NewEmployee(BaseModel):
-    name: str
-    skills: list[str]
-    department: str
-
-
 class Employee(BaseModel):
     id: int
     name: str
@@ -71,7 +65,7 @@ def get_all_employee_stats():
 
 
 @router.post("/add")
-def add_new_employee(employee: NewEmployee):
+def add_new_employee(name: str, skills: list[str], department: str):
     """
     Add a new employee to the Database
     """
@@ -80,7 +74,7 @@ def add_new_employee(employee: NewEmployee):
             # Fetch base_pay from the department
             result = connection.execute(
                 sqlalchemy.text("SELECT base_pay FROM dept WHERE dept_name = :dept_name"), 
-                {"dept_name": employee.department}
+                {"dept_name": department}
             ).fetchone()
             
             if result is None:
@@ -89,21 +83,21 @@ def add_new_employee(employee: NewEmployee):
             # Extract base_pay value
             pay = result[0]  # result is a tuple, we take the first element which is base_pay
 
-            print(f"Adding employee named {employee.name} with {employee.skills} skills being paid ${pay} to work in the {employee.department} department")
+            print(f"Adding employee named {name} with {skills} skills being paid ${pay} to work in the {department} department")
 
             # Insert new employee
             connection.execute(
                 sqlalchemy.text("INSERT INTO employees (name, skills, pay, department, level) VALUES (:name, :skills, :pay, :department, :level)"),
-                {"name": employee.name, "skills": employee.skills, "pay": pay, "department": employee.department, "level": 0}
+                {"name": name, "skills": skills, "pay": pay, "department": department, "level": 0}
             )
 
             # Update department population
             connection.execute(
                 sqlalchemy.text("UPDATE dept SET dept_populus = dept_populus + 1 WHERE dept_name = :dept_name"),
-                {"dept_name": employee.department}
+                {"dept_name": department}
             )
             id = connection.execute(sqlalchemy.text("SELECT id FROM employees WHERE name = :name AND skills = :skills AND department = :department"),
-            {"name": employee.name, "skills": employee.skills, "department": employee.department}).scalar()
+            {"name": name, "skills": skills, "department": department}).scalar()
             print("Done")
             return {"id": id}
         

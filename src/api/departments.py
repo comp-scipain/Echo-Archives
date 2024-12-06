@@ -30,7 +30,7 @@ def add_new_department(dept_name: str, dept_basePay: float):
             {"name": dept_name, "pay": dept_basePay, "popul": 0}
         )
         print("Done")
-    return {"status": "Successfully added new department"}
+    return {"status": f"Successfully added new department named {dept_name} with a base pay of ${dept_basePay}"}
 
 
 
@@ -41,7 +41,7 @@ def get_total_department_pay(department_name: str):
     """
     with db.engine.begin() as connection:
         result = connection.execute(
-            sqlalchemy.text("SELECT SUM(pay) FROM employees WHERE department = :department_name"),
+            sqlalchemy.text("SELECT ROUND(SUM(pay),2) FROM employees WHERE department = :department_name"),
             {"department_name": department_name}
         ).fetchone()
 
@@ -50,7 +50,7 @@ def get_total_department_pay(department_name: str):
 
         total_pay = result[0]
         
-        print(f"Total pay for department {department_name} is: ${total_pay:.2f}")
+        print(f"Total pay for department {department_name} is: ${total_pay}")
         return {"department": department_name, "total_pay": total_pay}
 
 @router.post("/total_paid")
