@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from src.api import auth
 import sqlalchemy
 from src import database as db
+import time
 
 router = APIRouter (
     prefix="/departments",
@@ -21,6 +22,7 @@ def add_new_department(dept_name: str, dept_basePay: float):
     """
     Add a new department to the Database
     """
+    # start 150.64ms
     if dept_basePay < 0:
         return {"error":"dept_basePay can't be a negative number"}
     print(f"Adding department named {dept_name} with ${dept_basePay} base pay and population {0}.")
@@ -30,6 +32,7 @@ def add_new_department(dept_name: str, dept_basePay: float):
             {"name": dept_name, "pay": dept_basePay, "popul": 0}
         )
         print("Done")
+
     return {"status": "Successfully added new department"}
 
 
@@ -39,6 +42,8 @@ def get_total_department_pay(department_name: str):
     """
     Returns the total pay for all employees in the specified department
     """
+    # start: 78.60ms
+    start_time = time.time() 
     with db.engine.begin() as connection:
         result = connection.execute(
             sqlalchemy.text("SELECT SUM(pay) FROM employees WHERE department = :department_name"),
@@ -49,47 +54,57 @@ def get_total_department_pay(department_name: str):
             raise HTTPException(status_code=404, detail="Department not found or no employees in the department")
 
         total_pay = result[0]
-        
         print(f"Total pay for department {department_name} is: ${total_pay:.2f}")
+        end_time = time.time() 
+        print(f"Endpoint took {(end_time - start_time)*1000:.2f} ms")  
         return {"department": department_name, "total_pay": total_pay}
 
 @router.post("/total_paid")
 def get_total_paid_by_department():
-    """
-    Calculates the total paid value for each employee by multiplying their wage by the days employed,
-    and aggregates this total by department.
-    """
+    start_time = time.time() 
     try:
         with db.engine.begin() as connection:
+
+            connection.execute(
+                sqlalchemy.text("""
+                    CREATE INDEX IF NOT EXISTS idx_history_total_calc 
+                    ON history(in_dept, days_employed, day_wage)
+                    INCLUDE (days_employed, day_wage)
+                """)
+            )
+            
             history_records = connection.execute(
-                sqlalchemy.text("SELECT days_employed, day_wage, in_dept FROM history")
+                sqlalchemy.text("""
+                    SELECT days_employed, day_wage, in_dept 
+                    FROM history
+                    WHERE in_dept IS NOT NULL
+                    ORDER BY in_dept
+                """)
             ).fetchall()
 
             if not history_records:
                 raise HTTPException(status_code=404, detail="No history records found")
 
+
             department_totals = {}
             for record in history_records:
                 department = record[2]
-                total_paid = record[0] * record[1]  # days_employed * day_wage
-
-                if department in department_totals:
-                    department_totals[department] += total_paid
-                else:
-                    department_totals[department] = total_paid
+                total_paid = record[0] * record[1]
+                department_totals[department] = department_totals.get(department, 0) + total_paid
 
             formatted_totals = [
                 {"department": dept, "total_paid": round(total, 2)}
                 for dept, total in department_totals.items()
             ]
 
-            print(f"Total paid by department: {formatted_totals}")
+            end_time = time.time() 
+            print(f"Endpoint took {(end_time - start_time)*1000:.2f} ms")  
             return {"status": "OK", "total_paid_by_department": formatted_totals}
 
     except Exception as e:
         print(f"An error occurred: {e}")
         raise HTTPException(status_code=500, detail="An error occurred while calculating the total paid by department")
-
+    
 
 @router.get("/history")
 def get_department_history(department_name: str):

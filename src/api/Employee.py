@@ -46,28 +46,29 @@ def get_employee_stats(emp_id: int):
             level=result_level
         )
 
-
 @router.get("/{employee_id}/get")
 def get_all_employee_stats():
-    """
-    Get a list of all the current employees
-    """
-    print("Reading employee data from database")
+
     with db.engine.begin() as connection:
+        connection.execute(sqlalchemy.text("""
+        CREATE INDEX IF NOT EXISTS idx_employees_composite 
+        ON employees(id, name, department, level)
+        """))
+
         employees = connection.execute(
-            sqlalchemy.text("SELECT id, name, skills, pay, department, level FROM employees")).fetchall()
-        if not employees:
-            raise HTTPException(status_code=404, detail="No employees found")
+            sqlalchemy.text("SELECT id, name, skills, pay, department, level FROM employees")
+        ).fetchall()
+        
         return [
-                Employee(
-                    id=e.id,
-                    name=e.name, 
-                    skills=e.skills, 
-                    pay=e.pay, 
-                    department=e.department, 
-                    level=e.level) 
-                    for e in employees
-                ]
+            Employee(
+                id=e.id,
+                name=e.name,
+                skills=e.skills,
+                pay=e.pay,
+                department=e.department,
+                level=e.level
+            ) for e in employees
+        ]
 
 
 @router.post("/add")
@@ -118,21 +119,61 @@ def fire_employee(employee_id: int):
     Removes a specific employee from the database based on the employee_id passed in
     """
     with db.engine.begin() as connection:
+        connection.execute(
+            sqlalchemy.text("""
+                CREATE INDEX IF NOT EXISTS idx_employees_id 
+                ON employees(id)
+            """)
+        )
+        connection.execute(
+            sqlalchemy.text("""
+                CREATE INDEX IF NOT EXISTS idx_dept_name 
+                ON dept(dept_name)
+            """)
+        )
+      
         to_be_fired = connection.execute(
-            sqlalchemy.text("SELECT id, name, skills, pay, department, level FROM employees WHERE id = :id"), {"id": employee_id}).fetchone()
+            sqlalchemy.text("SELECT id, name, skills, pay, department, level FROM employees WHERE id = :id"), 
+            {"id": employee_id}
+        ).fetchone()
+        
         if not to_be_fired:
-            raise HTTPException(status_code=404, detail="Employee not found")
+            raise HTTPException(status_code=404, detail="Employee not found")    
         department = to_be_fired[4]
-        days_employed = connection.execute(sqlalchemy.text("SELECT EXTRACT(DAY FROM AGE(NOW(), hire_date))::INTEGER FROM employees WHERE id = :id"),{"id":employee_id}).scalar_one()
+        
+        # EXPLAIN ANALYZE for days calculation
+        print("\nQuery Plan for Days Calculation:")
+        explain_days = connection.execute(
+            sqlalchemy.text("""
+                EXPLAIN ANALYZE
+                SELECT EXTRACT(DAY FROM AGE(NOW(), hire_date))::INTEGER 
+                FROM employees 
+                WHERE id = :id
+            """),
+            {"id": employee_id}
+        ).fetchall()
+        for row in explain_days:
+            print(row[0])
+            
+        days_employed = connection.execute(
+            sqlalchemy.text("SELECT EXTRACT(DAY FROM AGE(NOW(), hire_date))::INTEGER FROM employees WHERE id = :id"),
+            {"id": employee_id}
+        ).scalar_one()
+        
         wage = to_be_fired[3]
         print(f"This employee will be fired: {to_be_fired}")
     log_employee_history(employee_id, days_employed, wage, department)
     with db.engine.begin() as connection:
         connection.execute(
-            sqlalchemy.text("DELETE FROM employees WHERE id = :id"), {"id": employee_id})
+            sqlalchemy.text("DELETE FROM employees WHERE id = :id"), 
+            {"id": employee_id}
+        )         
+
         connection.execute(
-            sqlalchemy.text("UPDATE dept SET dept_populus = dept_populus - 1 WHERE dept_name = :dept_name"), {"dept_name": department})
-    print("Done!")
+            sqlalchemy.text("UPDATE dept SET dept_populus = dept_populus - 1 WHERE dept_name = :dept_name"), 
+            {"dept_name": department}
+        )
+        
     return {"status": f"Successfully fired the employee with id {employee_id}"}
 
 
@@ -142,7 +183,6 @@ def promote_employee(employee_id: int):
     Promotes an employee by increasing their level by 1 and increasing their pay by approximately 7%
     """
     with db.engine.begin() as connection:
-        # Fetch the employee to be promoted
         employee = connection.execute(
             sqlalchemy.text("SELECT id, name, skills, pay, department, level FROM employees WHERE id = :id"), 
             {"id": employee_id}
@@ -167,7 +207,7 @@ def promote_employee(employee_id: int):
         department = employee[4]
     log_employee_history(employee_id, days_employed, old_pay, department)
 
-    print(f"Promoted employee: {employee[1]} to level {new_level} with new pay: ${new_pay}")
+
     return {"status": "OK", "new_level": new_level, "new_pay": new_pay}
 
 
@@ -203,6 +243,7 @@ def demote_employee(employee_id: int):
     log_employee_history(employee_id, days_employed, old_pay, department)
 
     print(f"Demoted employee: {employee[1]} to level {new_level} with new pay: ${new_pay}")
+ 
     return {"status": "OK", "new_level": new_level, "new_pay": new_pay}
 
 
@@ -290,7 +331,7 @@ def log_employee_history(emp_id: int, days_employed: int, day_wage: float, in_de
                 }
             )
 
-            print(f"Logged history for employee: {employee[1]}")
+            print(f"Logged history for employee: {employee[1]}") 
             return {"status": f"Successfully logged history for {employee[1]}"}
 
     except Exception as e:

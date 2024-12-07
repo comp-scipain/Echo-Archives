@@ -1,9 +1,10 @@
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 from src.api import auth
-import sqlalchemy
+import sqlalchemy  
 from src import database as db
 from datetime import datetime
+import time
 
 router = APIRouter(
     prefix="/reviews",
@@ -64,7 +65,8 @@ def add_review(review: Review):
                 sqlalchemy.text("UPDATE employees SET level = level + 1 WHERE id = :id"),
                 {"id": review.employee_id}
             )
-            
+        end_time = time.time() 
+        print(f"Endpoint took {(end_time - start_time)*1000:.2f} ms")  
         return {"status": "OK"}
 
 @router.get("/employee/{emp_id}")
@@ -87,7 +89,7 @@ def get_employee_reviews(emp_id: int):
         
         if not reviews:
             raise HTTPException(status_code=404, detail="No reviews found for employee")
-            
+  
         return [{
             "date": r[0],
             "score": r[1],
@@ -116,7 +118,8 @@ def get_department_reviews(dept_name: str):
         
         if not result:
             raise HTTPException(status_code=404, detail="No reviews found for department")
-            
+        end_time = time.time() 
+        print(f"Endpoint took {(end_time - start_time)*1000:.2f} ms")  
         return [{
             "employee_name": r[0],
             "average_score": float(r[1]),
@@ -146,7 +149,6 @@ def get_review_stats():
         
         if not stats:
             raise HTTPException(status_code=404, detail="No review statistics found")
-            
         return [{
             "department": s[0],
             "average_score": float(s[1]),
