@@ -46,7 +46,7 @@ def get_total_department_pay(department_name: str):
     start_time = time.time() 
     with db.engine.begin() as connection:
         result = connection.execute(
-            sqlalchemy.text("SELECT SUM(pay) FROM employees WHERE department = :department_name"),
+            sqlalchemy.text("SELECT ROUND(SUM(pay),2) FROM employees WHERE department = :department_name"),
             {"department_name": department_name}
         ).fetchone()
 
@@ -61,7 +61,6 @@ def get_total_department_pay(department_name: str):
 
 @router.post("/total_paid")
 def get_total_paid_by_department():
-    start_time = time.time() 
     try:
         with db.engine.begin() as connection:
 
@@ -93,12 +92,10 @@ def get_total_paid_by_department():
                 department_totals[department] = department_totals.get(department, 0) + total_paid
 
             formatted_totals = [
-                {"department": dept, "total_paid": round(total, 2)}
-                for dept, total in department_totals.items()
+                {"department": record["department"], "total_paid": round(record["total_paid"], 2)}
+                for record in history_records
             ]
 
-            end_time = time.time() 
-            print(f"Endpoint took {(end_time - start_time)*1000:.2f} ms")  
             return {"status": "OK", "total_paid_by_department": formatted_totals}
 
     except Exception as e:
