@@ -65,8 +65,6 @@ def add_review(review: Review):
                 sqlalchemy.text("UPDATE employees SET level = level + 1 WHERE id = :id"),
                 {"id": review.employee_id}
             )
-        end_time = time.time() 
-        print(f"Endpoint took {(end_time - start_time)*1000:.2f} ms")  
         return {"status": "OK"}
 
 @router.get("/employee/{emp_id}")
@@ -118,8 +116,6 @@ def get_department_reviews(dept_name: str):
         
         if not result:
             raise HTTPException(status_code=404, detail="No reviews found for department")
-        end_time = time.time() 
-        print(f"Endpoint took {(end_time - start_time)*1000:.2f} ms")  
         return [{
             "employee_name": r[0],
             "average_score": float(r[1]),
