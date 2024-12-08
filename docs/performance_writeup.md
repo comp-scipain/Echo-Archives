@@ -42,6 +42,8 @@ The rationale behind these numbers is to ensure that our service can handle a re
     
     Endpoint took 2607.79 ms
 
+Index Added: CREATE INDEX IF NOT EXISTS idx_employees_composite ON employees(id, name, department, level);
+
 
 **/employee/{employee_id}/get ENDPOINT AFTER INDEX**
 
@@ -59,11 +61,14 @@ The rationale behind these numbers is to ensure that our service can handle a re
     
     Endpoint took 1219.87 ms
 
+Index Added: CREATE INDEX IF NOT EXISTS idx_history_total_calc ON history(in_dept, days_employed, day_wage) INCLUDE (days_employed, day_wage);
+
+
 **/departments/total_paid get ENDPOINT AFTER INDEX**
 
-Query Plan:
-    
-    Index Only Scan using idx_history_total_paid on history  (cost=0.42..15425.71 rows=333331 width=36) (actual time=0.062..47.676 rows=333331 loops=1)
+    Query Plan:
+    Index Only Scan using idx_history_total_paid on history  
+    (cost=0.42..15425.71 rows=333331 width=36) (actual time=0.062..47.676 rows=333331 loops=1)
       Index Cond: (in_dept IS NOT NULL)
       Heap Fetches: 273
     Planning Time: 0.109 ms
@@ -74,14 +79,16 @@ Query Plan:
 
 Query Plan for Employee Lookup:
 
-    Index Scan using idx_employees_composite on employees  (cost=0.42..8.44 rows=1 width=122) (actual time=2.240..2.243 rows=1 loops=1)
+    Index Scan using idx_employees_composite on employees  
+    (cost=0.42..8.44 rows=1 width=122) (actual time=2.240..2.243 rows=1 loops=1)
       Index Cond: (id = 23212)
     Planning Time: 1.283 ms
     Execution Time: 2.269 ms
 
 Query Plan for Days Calculation:
     
-    Index Scan using idx_employees_composite on employees  (cost=0.42..8.45 rows=1 width=4) (actual time=0.031..0.031 rows=1 loops=1)
+    Index Scan using idx_employees_composite on employees  
+    (cost=0.42..8.45 rows=1 width=4) (actual time=0.031..0.031 rows=1 loops=1)
       Index Cond: (id = 23212)
     Planning Time: 0.038 ms
     Execution Time: 0.040 ms
@@ -90,7 +97,8 @@ Query Plan for Days Calculation:
 Query Plan for Delete Operation:
     
     Delete on employees  (cost=0.42..8.44 rows=0 width=0) (actual time=0.026..0.027 rows=0 loops=1)
-      ->  Index Scan using idx_employees_composite on employees  (cost=0.42..8.44 rows=1 width=6) (actual time=0.008..0.009 rows=1 loops=1)
+      ->  Index Scan using idx_employees_composite on employees  
+      (cost=0.42..8.44 rows=1 width=6) (actual time=0.008..0.009 rows=1 loops=1)
             Index Cond: (id = 23212)
     Planning Time: 0.068 ms
     Execution Time: 0.124 ms
@@ -105,18 +113,25 @@ Query Plan for Department Update:
     Execution Time: 7.432 ms
 
 
+Indexes Added: 
+CREATE INDEX IF NOT EXISTS idx_employees_id ON employees(id);
+CREATE INDEX IF NOT EXISTS idx_dept_name ON dept(dept_name);
+
+
 **/employee/{employee_id}/delete ENDPOINT AFTER INDEX**
 
 Query Plan for Employee Lookup:
     
-    Index Scan using idx_employees_id on employees  (cost=0.42..8.44 rows=1 width=122) (actual time=0.151..0.152 rows=1 loops=1)
+    Index Scan using idx_employees_id on employees  
+    (cost=0.42..8.44 rows=1 width=122) (actual time=0.151..0.152 rows=1 loops=1)
       Index Cond: (id = 84543)
     Planning Time: 2.372 ms
     Execution Time: 0.185 ms
 
 Query Plan for Days Calculation:
     
-    Index Scan using idx_employees_id on employees  (cost=0.42..8.45 rows=1 width=4) (actual time=0.034..0.035 rows=1 loops=1)
+    Index Scan using idx_employees_id on employees  
+    (cost=0.42..8.45 rows=1 width=4) (actual time=0.034..0.035 rows=1 loops=1)
       Index Cond: (id = 84543)
     Planning Time: 0.123 ms
     Execution Time: 0.071 ms
@@ -127,7 +142,8 @@ Query Plan for Days Calculation:
 Query Plan for Delete Operation:
     
     Delete on employees  (cost=0.42..8.44 rows=0 width=0) (actual time=0.460..0.461 rows=0 loops=1)
-      ->  Index Scan using idx_employees_id on employees  (cost=0.42..8.44 rows=1 width=6) (actual time=0.016..0.018 rows=1 loops=1)
+      ->  Index Scan using idx_employees_id on employees  
+      (cost=0.42..8.44 rows=1 width=6) (actual time=0.016..0.018 rows=1 loops=1)
             Index Cond: (id = 84543)
     Planning Time: 0.089 ms
     Execution Time: 0.648 ms
@@ -135,7 +151,8 @@ Query Plan for Delete Operation:
 Query Plan for Department Update:
     
     Update on dept  (cost=0.14..8.17 rows=0 width=0) (actual time=0.030..0.030 rows=0 loops=1)
-      ->  Index Scan using idx_dept_name on dept  (cost=0.14..8.17 rows=1 width=10) (actual time=0.015..0.016 rows=1 loops=1)
+      ->  Index Scan using idx_dept_name on dept  
+      (cost=0.14..8.17 rows=1 width=10) (actual time=0.015..0.016 rows=1 loops=1)
             Index Cond: (dept_name = 'Data Analytics'::text)
     Planning Time: 0.730 ms
     Execution Time: 0.050 ms
