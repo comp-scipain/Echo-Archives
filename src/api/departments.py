@@ -19,10 +19,10 @@ class Department(BaseModel):
 
 @router.post("/new")
 def add_new_department(dept_name: str, dept_basePay: float):
+    #Execution Time: 0.024ms
     """
     Add a new department to the Database
     """
-    # start 150.64ms
     if dept_basePay < 0:
         return {"error":"dept_basePay can't be a negative number"}
     print(f"Adding department named {dept_name} with ${dept_basePay} base pay and population {0}.")
@@ -39,14 +39,13 @@ def add_new_department(dept_name: str, dept_basePay: float):
 
 @router.get("/daily_pay")
 def get_total_department_pay(department_name: str):
+    #Execution Time: 119.029ms
     """
     Returns the total pay for all employees in the specified department
     """
-    # start: 78.60ms
-    start_time = time.time() 
     with db.engine.begin() as connection:
         result = connection.execute(
-            sqlalchemy.text("SELECT ROUND(SUM(pay),2) FROM employees WHERE department = :department_name"),
+            sqlalchemy.text("SELECT ROUND(CAST(SUM(pay) AS decimal), 2) FROM employees WHERE department = :department_name"),
             {"department_name": department_name}
         ).fetchone()
 
@@ -55,12 +54,11 @@ def get_total_department_pay(department_name: str):
 
         total_pay = result[0]
         print(f"Total pay for department {department_name} is: ${total_pay:.2f}")
-        end_time = time.time() 
-        print(f"Endpoint took {(end_time - start_time)*1000:.2f} ms")  
         return {"department": department_name, "total_pay": total_pay}
 
 @router.post("/total_paid")
 def get_total_paid_by_department():
+    #Execution Time: 111.974ms
     try:
         with db.engine.begin() as connection:
 
@@ -92,8 +90,8 @@ def get_total_paid_by_department():
                 department_totals[department] = department_totals.get(department, 0) + total_paid
 
             formatted_totals = [
-                {"department": record["department"], "total_paid": round(record["total_paid"], 2)}
-                for record in history_records
+            {"department": dept, "total_paid": round(amount, 2)}
+            for dept, amount in department_totals.items()
             ]
 
             return {"status": "OK", "total_paid_by_department": formatted_totals}
@@ -105,6 +103,7 @@ def get_total_paid_by_department():
 
 @router.get("/history")
 def get_department_history(department_name: str):
+    #Execution Time: 8.533ms
     """
     Fetches the employment history of all employees who were in the specified department,
     aggregating the days employed for each employee.

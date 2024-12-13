@@ -22,6 +22,7 @@ class Employee(BaseModel):
 
 @router.get("/stats", response_model=Employee)
 def get_employee_stats(emp_id: int):
+    #Execution Time: 27ms
     with db.engine.begin() as connection:
         try:
             result = connection.execute(
@@ -42,7 +43,7 @@ def get_employee_stats(emp_id: int):
 
 @router.get("/{employee_id}/get")
 def get_all_employee_stats():
-
+    #Execution Time: 61.287ms
     with db.engine.begin() as connection:
         connection.execute(sqlalchemy.text("""
         CREATE INDEX IF NOT EXISTS idx_employees_composite 
@@ -67,6 +68,7 @@ def get_all_employee_stats():
 
 @router.post("/add")
 def add_new_employee(name: str, skills: list[str], department: str):
+    #Execution Time: 6.97ms
     """
     Add a new employee to the Database
     """
@@ -91,7 +93,7 @@ def add_new_employee(name: str, skills: list[str], department: str):
                 sqlalchemy.text("INSERT INTO employees (name, skills, pay, department, level) VALUES (:name, :skills, :pay, :department, :level)"),
                 {"name": name, "skills": skills, "pay": pay, "department": department, "level": 0}
             )
-
+         
             # Update department population
             connection.execute(
                 sqlalchemy.text("UPDATE dept SET dept_populus = dept_populus + 1 WHERE dept_name = :dept_name"),
@@ -109,6 +111,7 @@ def add_new_employee(name: str, skills: list[str], department: str):
 
 @router.delete("/{employee_id}/delete")
 def fire_employee(employee_id: int):
+    #Execution Time: 0.905ms
     """
     Removes a specific employee from the database based on the employee_id passed in
     """
@@ -130,25 +133,12 @@ def fire_employee(employee_id: int):
             sqlalchemy.text("SELECT id, name, skills, pay, department, level FROM employees WHERE id = :id"), 
             {"id": employee_id}
         ).fetchone()
-        
+
         if not to_be_fired:
             raise HTTPException(status_code=404, detail="Employee not found")    
         department = to_be_fired[4]
         
-        # EXPLAIN ANALYZE for days calculation
-        print("\nQuery Plan for Days Calculation:")
-        explain_days = connection.execute(
-            sqlalchemy.text("""
-                EXPLAIN ANALYZE
-                SELECT EXTRACT(DAY FROM AGE(NOW(), hire_date))::INTEGER 
-                FROM employees 
-                WHERE id = :id
-            """),
-            {"id": employee_id}
-        ).fetchall()
-        for row in explain_days:
-            print(row[0])
-            
+    
         days_employed = connection.execute(
             sqlalchemy.text("SELECT EXTRACT(DAY FROM AGE(NOW(), hire_date))::INTEGER FROM employees WHERE id = :id"),
             {"id": employee_id}
@@ -173,6 +163,7 @@ def fire_employee(employee_id: int):
 
 @router.post("/{employee_id}/promote")
 def promote_employee(employee_id: int):
+    #Execution Time: 1.596ms
     """
     Promotes an employee by increasing their level by 1 and increasing their pay by approximately 7%
     """
@@ -181,13 +172,12 @@ def promote_employee(employee_id: int):
             sqlalchemy.text("SELECT id, name, skills, pay, department, level FROM employees WHERE id = :id"), 
             {"id": employee_id}
         ).fetchone()
-
         if not employee:
             raise HTTPException(status_code=404, detail="Employee not found")
             
         days_employed = connection.execute(sqlalchemy.text("SELECT EXTRACT(DAY FROM AGE(NOW(), hire_date))::INTEGER FROM employees WHERE id = :id"),
         {"id":employee_id}).scalar_one()
-
+     
         new_level = employee[5] + 1  # Increment the level
         new_pay = round(employee[3] * 1.07, 2)  # Increase pay by 7% and round to 2 decimal places
         old_pay = employee[3]
@@ -207,6 +197,7 @@ def promote_employee(employee_id: int):
 
 @router.post("/{employee_id}/demote")
 def demote_employee(employee_id: int):
+    #Execution Time: 0.495ms
     """
     Demotes an employee by decreasing their level by 1 and decreasing their pay by approximately 7%
     """
@@ -243,6 +234,7 @@ def demote_employee(employee_id: int):
 
 @router.post("/{employee_id}/transfer")
 def transfer_employee(employee_id: int, new_department: str):
+    #Execution Time: 0.232ms
     """
     Transfers an employee to a new department, resetting their pay, level, and updating dept_populus.
     """
@@ -252,7 +244,7 @@ def transfer_employee(employee_id: int, new_department: str):
             sqlalchemy.text("SELECT id, name, skills, pay, department, level FROM employees WHERE id = :id"), 
             {"id": employee_id}
         ).fetchone()
-        
+
         if not employee:
             raise HTTPException(status_code=404, detail="Employee not found")
 
@@ -289,7 +281,6 @@ def transfer_employee(employee_id: int, new_department: str):
             sqlalchemy.text("UPDATE dept SET dept_populus = dept_populus + 1 WHERE dept_name = :dept_name"),
             {"dept_name": new_department}
         )
-
         print("Logging changes")
         old_pay = employee[3]
     log_employee_history(employee_id, days_employed, old_pay, current_department)
@@ -301,6 +292,7 @@ def transfer_employee(employee_id: int, new_department: str):
 #Note: in order to get the days employed we could use DATEDIFF(NOW(),created_at)
 @router.post("{employee_id}/log_history")
 def log_employee_history(emp_id: int, days_employed: int, day_wage: float, in_dept: str):
+    #Execution Time: .027ms
     """
     Logs an employee's history into the history table.
     """
@@ -309,7 +301,7 @@ def log_employee_history(emp_id: int, days_employed: int, day_wage: float, in_de
             employee = connection.execute(
                 sqlalchemy.text("SELECT id, name FROM employees WHERE id = :id"), 
                 {"id": emp_id}).fetchone()
-
+            
             if not employee:
                 raise HTTPException(status_code=404, detail="Employee not found")
 
@@ -335,6 +327,7 @@ def log_employee_history(emp_id: int, days_employed: int, day_wage: float, in_de
 
 @router.get("/{employee_id}/total_paid")
 def get_total_paid_by_employee(emp_id: int):
+    #Execution Time: 85.185ms
     """
     Calculates the total paid value for a specific employee by multiplying their wage by the days employed,
     and aggregates this total by department.

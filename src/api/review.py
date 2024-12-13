@@ -21,6 +21,7 @@ class Review(BaseModel):
 
 @router.post("/add")
 def add_review(review: Review):
+    #Exectuion Time: 1.385ms
     """
     Add a performance review for an employee
     """
@@ -33,7 +34,7 @@ def add_review(review: Review):
             sqlalchemy.text("SELECT name, department, level FROM employees WHERE id = :id"),
             {"id": review.employee_id}
         ).fetchone()
-        
+
         if not employee:
             raise HTTPException(status_code=404, detail="Employee not found")
         
@@ -52,7 +53,7 @@ def add_review(review: Review):
                 "date": review.review_date
             }
         )
-        
+  
         # If score is 1 or 2, demote employee
         if review.performance_score <= 2:
             conn.execute(
@@ -69,6 +70,7 @@ def add_review(review: Review):
 
 @router.get("/employee/{emp_id}")
 def get_employee_reviews(emp_id: int):
+    #Execution Time: 95.359ms
     """
     Get all reviews for a specific employee
     """
@@ -84,7 +86,7 @@ def get_employee_reviews(emp_id: int):
             """),
             {"emp_id": emp_id}
         ).fetchall()
-        
+
         if not reviews:
             raise HTTPException(status_code=404, detail="No reviews found for employee")
   
@@ -97,6 +99,7 @@ def get_employee_reviews(emp_id: int):
 
 @router.get("/department/{dept_name}")
 def get_department_reviews(dept_name: str):
+    #Execution Time: 152.635ms
     """
     Get average review scores for a department
     """
@@ -124,6 +127,7 @@ def get_department_reviews(dept_name: str):
 
 @router.get("/stats")
 def get_review_stats():
+    #Execution Time: 356.865ms
     """
     Get overall review statistics
     """
